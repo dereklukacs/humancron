@@ -14,7 +14,7 @@ struct WorkflowExecutionView: View {
     
     var progress: Double {
         guard let workflow = appState.currentWorkflow else { return 0 }
-        return Double(appState.currentStep) / Double(workflow.steps.count)
+        return Double(appState.completedSteps.count) / Double(workflow.steps.count)
     }
     
     var body: some View {
@@ -28,7 +28,7 @@ struct WorkflowExecutionView: View {
                     
                     Spacer()
                     
-                    Text("\(appState.currentStep + 1) of \(appState.currentWorkflow?.steps.count ?? 0)")
+                    Text("\(appState.completedSteps.count) of \(appState.currentWorkflow?.steps.count ?? 0) completed")
                         .font(.system(size: 14))
                         .foregroundColor(Token.Color.onBackground.opacity(0.7))
                 }
@@ -62,7 +62,7 @@ struct WorkflowExecutionView: View {
                                 ChecklistStepRow(
                                     step: step,
                                     stepNumber: index + 1,
-                                    isCompleted: index < appState.currentStep,
+                                    isCompleted: appState.isStepCompleted(index),
                                     isCurrent: index == appState.currentStep,
                                     isLinkOpened: appState.isLinkOpened(forStep: index),
                                     favicon: step.link != nil ? faviconService.favicon(for: step.link!) : nil

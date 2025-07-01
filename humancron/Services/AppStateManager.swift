@@ -10,6 +10,7 @@ class AppStateManager: ObservableObject {
     @Published var currentWorkflow: Workflow?
     @Published var currentStep: Int = 0
     @Published var openedLinksForSteps: Set<Int> = []
+    @Published var completedSteps: Set<Int> = []
     
     private var window: NSWindow?
     private var preferencesWindow: NSWindow?
@@ -147,12 +148,16 @@ class AppStateManager: ObservableObject {
         currentWorkflow = workflow
         currentStep = 0
         openedLinksForSteps.removeAll()
+        completedSteps.removeAll()
         WorkflowHistoryService.shared.startWorkflow(workflow)
         notifyWorkflowChange()
     }
     
     func nextStep() {
         guard let workflow = currentWorkflow else { return }
+        
+        // Mark current step as completed
+        completedSteps.insert(currentStep)
         
         if currentStep < workflow.steps.count - 1 {
             currentStep += 1
@@ -183,6 +188,7 @@ class AppStateManager: ObservableObject {
     func resetWorkflow() {
         currentStep = 0
         openedLinksForSteps.removeAll()
+        completedSteps.removeAll()
         notifyWorkflowChange()
     }
     
@@ -192,6 +198,10 @@ class AppStateManager: ObservableObject {
     
     func isLinkOpened(forStep step: Int) -> Bool {
         return openedLinksForSteps.contains(step)
+    }
+    
+    func isStepCompleted(_ step: Int) -> Bool {
+        return completedSteps.contains(step)
     }
     
     private func notifyWorkflowChange() {
