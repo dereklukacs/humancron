@@ -153,6 +153,15 @@ class AppStateManager: ObservableObject {
         notifyWorkflowChange()
     }
     
+    func toggleCurrentStepCompletion() {
+        if completedSteps.contains(currentStep) {
+            completedSteps.remove(currentStep)
+        } else {
+            completedSteps.insert(currentStep)
+        }
+        notifyWorkflowChange()
+    }
+    
     func nextStep() {
         guard let workflow = currentWorkflow else { return }
         

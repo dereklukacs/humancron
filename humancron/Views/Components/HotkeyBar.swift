@@ -5,7 +5,7 @@ struct HotkeyBar: View {
     let items: [HotkeyItem]
     
     var body: some View {
-        HStack(spacing: Token.Spacing.x4) {
+        HStack(spacing: Token.Spacing.x3) {
             ForEach(items) { item in
                 Button(action: {
                     item.action?()
@@ -17,13 +17,13 @@ struct HotkeyBar: View {
                 
                 if item.id != items.last?.id {
                     Divider()
-                        .frame(height: 16)
+                        .frame(height: 12)
                         .opacity(0.3)
                 }
             }
         }
-        .padding(.horizontal, Token.Spacing.x4)
-        .padding(.vertical, Token.Spacing.x3)
+        .padding(.horizontal, Token.Spacing.x3)
+        .padding(.vertical, Token.Spacing.x2)
         .frame(maxWidth: .infinity)
         .background(Token.Color.surface.opacity(0.8))
         .overlay(
@@ -39,11 +39,11 @@ struct HotkeyItemView: View {
     let item: HotkeyItem
     
     var body: some View {
-        HStack(spacing: Token.Spacing.x2) {
+        HStack(spacing: Token.Spacing.x1) {
             ShortcutHint(item.key)
                 .opacity(item.action == nil ? 0.4 : 1.0)
             Text(item.label)
-                .font(.system(size: 13))
+                .font(.system(size: 12))
                 .foregroundColor(Token.Color.onBackground.opacity(item.action == nil ? 0.4 : 0.8))
         }
     }
@@ -68,8 +68,8 @@ struct HotkeyButtonStyle: ButtonStyle {
     
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .padding(.horizontal, Token.Spacing.x2)
-            .padding(.vertical, Token.Spacing.x1)
+            .padding(.horizontal, Token.Spacing.x1)
+            .padding(.vertical, 4)
             .background(
                 RoundedRectangle(cornerRadius: Token.Radius.sm)
                     .fill(

@@ -129,29 +129,17 @@ struct WorkflowExecutionView: View {
             
             // Regular key handling
             switch event.keyCode {
-            case 36: // Enter only
+            case 36: // Enter - toggle completion status
                 if !event.modifierFlags.contains(.command) {
-                    // If step has a link and it hasn't been opened yet, open it
-                    if let link = currentStep?.link, !appState.isLinkOpened(forStep: appState.currentStep) {
-                        openLink(link)
-                        appState.markLinkAsOpened(forStep: appState.currentStep)
-                        // Hide the app so user can interact with the opened link
-                        appState.hideApp()
-                    } else {
-                        // Otherwise, advance to next step
-                        appState.nextStep()
-                    }
+                    appState.toggleCurrentStepCompletion()
                     return nil
                 }
-            case 49: // Spacebar - same as Enter for opening links
-                if let link = currentStep?.link, !appState.isLinkOpened(forStep: appState.currentStep) {
+            case 49: // Spacebar - open link
+                if let link = currentStep?.link {
                     openLink(link)
                     appState.markLinkAsOpened(forStep: appState.currentStep)
                     // Hide the app so user can interact with the opened link
                     appState.hideApp()
-                } else {
-                    // Otherwise, advance to next step
-                    appState.nextStep()
                 }
                 return nil
             case 53: // Escape

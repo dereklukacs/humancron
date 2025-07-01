@@ -64,22 +64,21 @@ struct MainOverlayView: View {
             if let workflow = appState.currentWorkflow,
                let currentStep = workflow.steps[safe: appState.currentStep] {
                 
-                // Primary action - changes based on link state
-                if let link = currentStep.link, !appState.isLinkOpened(forStep: appState.currentStep) {
-                    items.append(HotkeyItem("↵", "Open Link", action: {
-                        LinkOpenerService.shared.openLink(link)
-                        appState.markLinkAsOpened(forStep: appState.currentStep)
-                        appState.hideApp()
-                    }))
+                // Enter key - toggle completion
+                items.append(HotkeyItem("↵", "Toggle Done", action: {
+                    appState.toggleCurrentStepCompletion()
+                }))
+                
+                // Spacebar - open link if available, otherwise disabled
+                if let link = currentStep.link {
                     items.append(HotkeyItem("␣", "Open Link", action: {
                         LinkOpenerService.shared.openLink(link)
                         appState.markLinkAsOpened(forStep: appState.currentStep)
                         appState.hideApp()
                     }))
                 } else {
-                    items.append(HotkeyItem("↵", "Next", action: {
-                        appState.nextStep()
-                    }))
+                    // Show disabled spacebar when no link
+                    items.append(HotkeyItem("␣", "Open Link", action: nil))
                 }
             }
             
