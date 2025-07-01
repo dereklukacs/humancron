@@ -255,7 +255,7 @@ struct WorkflowRow: View {
         .background(
             isSelected ? Token.Color.brand.opacity(0.1) : 
             isHovered ? Token.Color.surface.opacity(0.8) : 
-            Token.Color.surface.opacity(0.8)
+            Color.clear
         )
         .overlay(
             RoundedRectangle(cornerRadius: Token.Radius.md)
