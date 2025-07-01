@@ -65,13 +65,10 @@ struct WorkflowExecutionView: View {
                                     isCompleted: appState.isStepCompleted(index),
                                     isCurrent: index == appState.currentStep,
                                     isLinkOpened: appState.isLinkOpened(forStep: index),
-                                    favicon: step.link != nil ? faviconService.favicon(for: step.link!) : nil
+                                    favicon: step.link != nil ? faviconService.favicon(for: step.link!) : nil,
+                                    stepIndex: index
                                 )
                                 .id(index)
-                                .onTapGesture {
-                                    // Allow clicking on steps to jump to them
-                                    appState.currentStep = index
-                                }
                             }
                         }
                     }
@@ -183,27 +180,37 @@ struct WorkflowExecutionView: View {
 // MARK: - Checklist Step Row
 
 struct ChecklistStepRow: View {
+    @EnvironmentObject var appState: AppStateManager
     let step: WorkflowStep
     let stepNumber: Int
     let isCompleted: Bool
     let isCurrent: Bool
     let isLinkOpened: Bool
     let favicon: NSImage?
+    let stepIndex: Int
+    @State private var isHovered = false
     
     var body: some View {
         HStack(alignment: .top, spacing: Token.Spacing.x3) {
             // Step indicator - fixed size for both states
-            ZStack {
-                if isCompleted {
-                    Image(systemName: "checkmark.circle.fill")
-                        .font(.system(size: 20))
-                        .foregroundColor(Token.Color.success)
-                } else {
-                    Circle()
-                        .stroke(Token.Color.onBackground.opacity(0.3), lineWidth: 2)
+            Button(action: {
+                // Toggle completion when clicking the circle
+                appState.currentStep = stepIndex
+                appState.toggleCurrentStepCompletion()
+            }) {
+                ZStack {
+                    if isCompleted {
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.system(size: 20))
+                            .foregroundColor(Token.Color.success)
+                    } else {
+                        Circle()
+                            .stroke(Token.Color.onBackground.opacity(0.3), lineWidth: 2)
+                    }
                 }
+                .frame(width: 24, height: 24) // Fixed frame for consistent sizing
             }
-            .frame(width: 24, height: 24) // Fixed frame for consistent sizing
+            .buttonStyle(.plain)
             
             // Step content
             HStack(spacing: Token.Spacing.x2) {
@@ -214,25 +221,33 @@ struct ChecklistStepRow: View {
                 
                 // Always reserve space for link indicator
                 Group {
-                    if let _ = step.link {
-                        HStack(spacing: Token.Spacing.x1) {
-                            // Favicon if available
-                            if let favicon = favicon {
-                                Image(nsImage: favicon)
-                                    .frame(width: 16, height: 16)
-                            } else {
-                                Image(systemName: "globe")
-                                    .font(.system(size: 14))
-                                    .foregroundColor(Token.Color.onBackground.opacity(0.5))
-                            }
-                            
-                            // Link status indicator
-                            if isLinkOpened {
-                                Image(systemName: "checkmark.circle.fill")
-                                    .font(.system(size: 12))
-                                    .foregroundColor(Token.Color.success)
+                    if let link = step.link {
+                        Button(action: {
+                            // Open link when clicking the icon
+                            LinkOpenerService.shared.openLink(link)
+                            appState.markLinkAsOpened(forStep: stepIndex)
+                            appState.hideApp()
+                        }) {
+                            HStack(spacing: Token.Spacing.x1) {
+                                // Favicon if available
+                                if let favicon = favicon {
+                                    Image(nsImage: favicon)
+                                        .frame(width: 16, height: 16)
+                                } else {
+                                    Image(systemName: "globe")
+                                        .font(.system(size: 14))
+                                        .foregroundColor(Token.Color.onBackground.opacity(0.5))
+                                }
+                                
+                                // Link status indicator
+                                if isLinkOpened {
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .font(.system(size: 12))
+                                        .foregroundColor(Token.Color.success)
+                                }
                             }
                         }
+                        .buttonStyle(.plain)
                     } else {
                         // Invisible spacer to maintain consistent width
                         Color.clear
@@ -256,15 +271,34 @@ struct ChecklistStepRow: View {
         }
         .padding(.horizontal, Token.Spacing.x3)
         .padding(.vertical, Token.Spacing.x2)
+        .contentShape(Rectangle())
+        .onTapGesture {
+            // Select this step when clicking anywhere on the row
+            appState.currentStep = stepIndex
+        }
         .background(
             RoundedRectangle(cornerRadius: Token.Radius.md)
-                .fill(isCurrent ? Token.Color.brand.opacity(0.1) : Color.clear)
+                .fill(
+                    isCurrent ? Token.Color.brand.opacity(0.1) : 
+                    isHovered ? Token.Color.surface.opacity(0.8) : 
+                    Color.clear
+                )
                 .animation(.easeInOut(duration: 0.2), value: isCurrent)
+                .animation(.easeInOut(duration: 0.1), value: isHovered)
         )
         .overlay(
             RoundedRectangle(cornerRadius: Token.Radius.md)
-                .stroke(Token.Color.brand.opacity(isCurrent ? 1.0 : 0.0), lineWidth: 2)
+                .stroke(
+                    isCurrent ? Token.Color.brand.opacity(1.0) : 
+                    isHovered ? Token.Color.onSurface.opacity(0.2) : 
+                    Color.clear, 
+                    lineWidth: isCurrent ? 2 : 1
+                )
                 .animation(.easeInOut(duration: 0.2), value: isCurrent)
+                .animation(.easeInOut(duration: 0.1), value: isHovered)
         )
+        .onHover { hovering in
+            isHovered = hovering
+        }
     }
 }

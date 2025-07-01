@@ -173,6 +173,10 @@ struct WorkflowSelectorView: View {
                     selectWorkflow()
                     return nil // Consume the event
                     
+                case 124: // Right arrow
+                    selectWorkflow()
+                    return nil // Consume the event
+                    
                 case 53: // Escape
                     appState.hideApp()
                     return nil // Consume the event
@@ -250,8 +254,8 @@ struct WorkflowRow: View {
         .padding(Token.Spacing.x3)
         .background(
             isSelected ? Token.Color.brand.opacity(0.1) : 
-            isHovered ? Token.Color.surface.opacity(0.7) : 
-            Token.Color.surface.opacity(0.5)
+            isHovered ? Token.Color.surface.opacity(0.8) : 
+            Token.Color.surface.opacity(0.8)
         )
         .overlay(
             RoundedRectangle(cornerRadius: Token.Radius.md)

@@ -43,6 +43,7 @@ struct ContentView: View {
 
 struct MainOverlayView: View {
     @EnvironmentObject var appState: AppStateManager
+    @State private var windowDragLocation = CGPoint.zero
     
     var hotkeyItems: [HotkeyItem] {
         if appState.currentWorkflow == nil {
@@ -90,9 +91,6 @@ struct MainOverlayView: View {
                 appState.backToWorkflowList()
             }))
             
-            items.append(HotkeyItem("⌘R", "Restart", action: {
-                appState.resetWorkflow()
-            }))
             items.append(HotkeyItem("ESC", "Exit", action: {
                 appState.hideApp()
                 appState.completeWorkflow()
@@ -109,6 +107,18 @@ struct MainOverlayView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             
             VStack(spacing: 0) {
+                // Drag handle area at the top
+                Rectangle()
+                    .fill(Color.clear)
+                    .frame(height: 30)
+                    .overlay(
+                        // Visual drag indicator
+                        Capsule()
+                            .fill(Token.Color.onSurface.opacity(0.1))
+                            .frame(width: 50, height: 4)
+                    )
+                    .background(WindowDragView())
+                
                 // Main content
                 VStack(spacing: 0) {
                     if appState.currentWorkflow == nil {
@@ -120,6 +130,7 @@ struct MainOverlayView: View {
                     }
                 }
                 .padding(Token.Spacing.x4)
+                .padding(.top, -Token.Spacing.x4) // Compensate for drag area
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 
                 // Hotkey bar at bottom
@@ -158,4 +169,28 @@ struct VisualEffectBackground: NSViewRepresentable {
 #Preview {
     ContentView()
         .environmentObject(AppStateManager.shared)
+}
+
+// Window drag view that allows dragging the window
+struct WindowDragView: NSViewRepresentable {
+    func makeNSView(context: Context) -> NSView {
+        return DraggableView()
+    }
+    
+    func updateNSView(_ nsView: NSView, context: Context) {
+        // No updates needed
+    }
+}
+
+// Custom NSView that handles window dragging
+class DraggableView: NSView {
+    override func mouseDown(with event: NSEvent) {
+        if let window = self.window {
+            window.performDrag(with: event)
+        }
+    }
+    
+    override func acceptsFirstMouse(for event: NSEvent?) -> Bool {
+        return true
+    }
 }

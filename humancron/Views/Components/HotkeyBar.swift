@@ -22,7 +22,7 @@ struct HotkeyBar: View {
                 }
             }
         }
-        .padding(.horizontal, Token.Spacing.x3)
+        .padding(.horizontal, Token.Spacing.x1)
         .padding(.vertical, Token.Spacing.x2)
         .frame(maxWidth: .infinity)
         .background(Token.Color.surface.opacity(0.8))

@@ -56,7 +56,7 @@ class AppStateManager: ObservableObject {
         window.level = .floating
         // Use borderless window style to remove all chrome
         window.styleMask = [.borderless, .fullSizeContentView]
-        window.isMovableByWindowBackground = true
+        window.isMovableByWindowBackground = false
         window.isReleasedWhenClosed = false
         window.hidesOnDeactivate = false
         window.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .transient]
