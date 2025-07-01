@@ -7,7 +7,13 @@ struct HotkeyBar: View {
     var body: some View {
         HStack(spacing: Token.Spacing.x4) {
             ForEach(items) { item in
-                HotkeyItemView(item: item)
+                Button(action: {
+                    item.action?()
+                }) {
+                    HotkeyItemView(item: item)
+                }
+                .buttonStyle(HotkeyButtonStyle(isDisabled: item.action == nil))
+                .disabled(item.action == nil)
                 
                 if item.id != items.last?.id {
                     Divider()
@@ -35,9 +41,10 @@ struct HotkeyItemView: View {
     var body: some View {
         HStack(spacing: Token.Spacing.x2) {
             ShortcutHint(item.key)
+                .opacity(item.action == nil ? 0.4 : 1.0)
             Text(item.label)
                 .font(.system(size: 13))
-                .foregroundColor(Token.Color.onBackground.opacity(0.8))
+                .foregroundColor(Token.Color.onBackground.opacity(item.action == nil ? 0.4 : 0.8))
         }
     }
 }
@@ -46,10 +53,41 @@ struct HotkeyItem: Identifiable {
     let id = UUID()
     let key: String
     let label: String
+    let action: (() -> Void)?
     
-    init(_ key: String, _ label: String) {
+    init(_ key: String, _ label: String, action: (() -> Void)? = nil) {
         self.key = key
         self.label = label
+        self.action = action
+    }
+}
+
+struct HotkeyButtonStyle: ButtonStyle {
+    let isDisabled: Bool
+    @State private var isHovered = false
+    
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .padding(.horizontal, Token.Spacing.x2)
+            .padding(.vertical, Token.Spacing.x1)
+            .background(
+                RoundedRectangle(cornerRadius: Token.Radius.sm)
+                    .fill(
+                        isDisabled ? Color.clear :
+                        configuration.isPressed ? Token.Color.surface.opacity(0.3) : 
+                        isHovered ? Token.Color.surface.opacity(0.2) : 
+                        Color.clear
+                    )
+            )
+            .opacity(configuration.isPressed && !isDisabled ? 0.8 : 1.0)
+            .scaleEffect(configuration.isPressed && !isDisabled ? 0.95 : 1.0)
+            .animation(.easeInOut(duration: 0.1), value: configuration.isPressed)
+            .animation(.easeInOut(duration: 0.1), value: isHovered)
+            .onHover { hovering in
+                if !isDisabled {
+                    isHovered = hovering
+                }
+            }
     }
 }
 

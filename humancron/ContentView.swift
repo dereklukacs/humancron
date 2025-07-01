@@ -48,9 +48,14 @@ struct MainOverlayView: View {
         if appState.currentWorkflow == nil {
             // Workflow selector hotkeys
             return [
-                HotkeyItem("↵", "Select"),
-                HotkeyItem("↑↓", "Navigate"),
-                HotkeyItem("ESC", "Cancel")
+                HotkeyItem("↵", "Select", action: {
+                    // Trigger select action for workflow selector
+                    NotificationCenter.default.post(name: .selectWorkflow, object: nil)
+                }),
+                HotkeyItem("↑↓", "Navigate"),  // No action - keyboard only
+                HotkeyItem("ESC", "Cancel", action: {
+                    appState.hideApp()
+                })
             ]
         } else {
             // Workflow execution hotkeys - dynamically built based on current step
@@ -60,22 +65,35 @@ struct MainOverlayView: View {
                let currentStep = workflow.steps[safe: appState.currentStep] {
                 
                 // Primary action - changes based on link state
-                if let _ = currentStep.link, !appState.isLinkOpened(forStep: appState.currentStep) {
-                    items.append(HotkeyItem("↵", "Open Link"))
+                if let link = currentStep.link, !appState.isLinkOpened(forStep: appState.currentStep) {
+                    items.append(HotkeyItem("↵", "Open Link", action: {
+                        LinkOpenerService.shared.openLink(link)
+                        appState.markLinkAsOpened(forStep: appState.currentStep)
+                        appState.hideApp()
+                    }))
                 } else {
-                    items.append(HotkeyItem("↵", "Next"))
+                    items.append(HotkeyItem("↵", "Next", action: {
+                        appState.nextStep()
+                    }))
                 }
             }
             
-            // Navigation
-            if appState.currentStep > 0 {
-                items.append(HotkeyItem("←", "Back"))
-            }
+            // Navigation - always show back button to prevent layout shift
+            items.append(HotkeyItem("←", "Back", action: appState.currentStep > 0 ? {
+                appState.previousStep()
+            } : nil))
             
             // Always available actions
-            items.append(HotkeyItem("→", "Skip"))
-            items.append(HotkeyItem("⌘R", "Restart"))
-            items.append(HotkeyItem("ESC", "Exit"))
+            items.append(HotkeyItem("→", "Skip", action: {
+                appState.nextStep()
+            }))
+            items.append(HotkeyItem("⌘R", "Restart", action: {
+                appState.resetWorkflow()
+            }))
+            items.append(HotkeyItem("ESC", "Exit", action: {
+                appState.hideApp()
+                appState.completeWorkflow()
+            }))
             
             return items
         }

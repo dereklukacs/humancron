@@ -119,6 +119,9 @@ struct WorkflowSelectorView: View {
         .onDisappear {
             removeKeyboardHandling()
         }
+        .onReceive(NotificationCenter.default.publisher(for: .selectWorkflow)) { _ in
+            selectWorkflow()
+        }
     }
     
     private func setupKeyboardHandling() {

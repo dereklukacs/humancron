@@ -154,4 +154,5 @@ class SystemTrayService: ObservableObject {
 
 extension Notification.Name {
     static let workflowChanged = Notification.Name("workflowChanged")
+    static let selectWorkflow = Notification.Name("selectWorkflow")
 }
