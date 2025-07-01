@@ -48,6 +48,9 @@ struct humancronApp: App {
 
 // App delegate for lifecycle events
 class AppDelegate: NSObject, NSApplicationDelegate {
+    // Keep a strong reference to the system tray service
+    private let systemTrayService = SystemTrayService.shared
+    
     func applicationDidFinishLaunching(_ notification: Notification) {
         print("App launched!")
         
@@ -59,7 +62,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         print("Accessibility permissions: \(hasPermissions)")
         
         // Setup system tray
-        SystemTrayService.shared.setup()
+        systemTrayService.setup()
         print("System tray setup complete")
         
         // Show onboarding if needed

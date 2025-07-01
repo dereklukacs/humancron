@@ -12,18 +12,33 @@ class SystemTrayService: ObservableObject {
     private init() {}
     
     func setup() {
+        print("SystemTrayService: Starting setup")
+        
         // Create status bar item
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
+        print("SystemTrayService: Created status item: \(statusItem != nil)")
         
         // Set icon
         if let button = statusItem?.button {
-            button.image = NSImage(systemSymbolName: "clock.badge.checkmark", accessibilityDescription: "HumanCron")
-            button.imagePosition = .imageLeading
-            updateTitle(nil)
+            // Use text instead of icon for better visibility
+            button.title = "HC"
+            button.toolTip = "HumanCron"
+            
+            // Make sure the status item is visible
+            statusItem?.isVisible = true
+            print("SystemTrayService: Status item setup complete with title: \(button.title ?? "nil")")
         }
         
         // Create menu
         createMenu()
+        print("SystemTrayService: Menu created")
+        
+        // Set button action to show menu
+        if let button = statusItem?.button {
+            button.action = #selector(statusItemClicked(_:))
+            button.target = self
+            button.sendAction(on: [.leftMouseUp, .rightMouseUp])
+        }
         
         // Subscribe to workflow changes
         NotificationCenter.default.addObserver(
@@ -82,9 +97,9 @@ class SystemTrayService: ObservableObject {
     func updateTitle(_ title: String?) {
         if let button = statusItem?.button {
             if let title = title {
-                button.title = " \(title)"
+                button.title = "HC: \(title)"
             } else {
-                button.title = ""
+                button.title = "HC"
             }
         }
     }
@@ -93,9 +108,10 @@ class SystemTrayService: ObservableObject {
         guard let menu = statusBarMenu else { return }
         
         if let workflow = workflow {
-            let stepText = "Step \(step + 1)/\(workflow.steps.count)"
-            menu.items[0].title = "\(workflow.name) - \(stepText)"
-            updateTitle(stepText)
+            let currentStepTitle = workflow.steps[step].name
+            let stepProgress = "(\(step + 1)/\(workflow.steps.count))"
+            menu.items[0].title = "\(workflow.name) - Step \(step + 1): \(currentStepTitle)"
+            updateTitle("\(currentStepTitle) \(stepProgress)")
             currentWorkflow = workflow.name
         } else {
             menu.items[0].title = "No active workflow"
@@ -124,6 +140,15 @@ class SystemTrayService: ObservableObject {
     
     @objc private func quitApp() {
         NSApplication.shared.terminate(nil)
+    }
+    
+    @objc private func statusItemClicked(_ sender: Any?) {
+        print("SystemTrayService: Status item clicked")
+        if let event = NSApp.currentEvent {
+            statusItem?.menu = statusBarMenu
+            statusItem?.button?.performClick(nil)
+            statusItem?.menu = nil // Remove menu after showing to allow future clicks
+        }
     }
 }
 
