@@ -8,6 +8,7 @@ struct WorkflowSelectorView: View {
     @StateObject private var historyService = WorkflowHistoryService.shared
     @State private var searchText = ""
     @State private var selectedIndex = 0
+    @State private var hoveredIndex: Int? = nil
     @State private var eventMonitor: Any?
     @FocusState private var isSearchFieldFocused: Bool
     
@@ -90,12 +91,16 @@ struct WorkflowSelectorView: View {
                             WorkflowRow(
                                 workflow: workflow,
                                 isSelected: index == selectedIndex,
+                                isHovered: index == hoveredIndex,
                                 lastRun: historyService.getLastRun(for: workflow.id),
                                 shortcutNumber: index < 9 ? index + 1 : nil
                             )
                             .onTapGesture {
                                 selectedIndex = index
                                 selectWorkflow()
+                            }
+                            .onHover { hovering in
+                                hoveredIndex = hovering ? index : nil
                             }
                         }
                     }
@@ -220,6 +225,7 @@ struct WorkflowSelectorView: View {
 struct WorkflowRow: View {
     let workflow: Workflow
     let isSelected: Bool
+    let isHovered: Bool
     let lastRun: WorkflowRun?
     let shortcutNumber: Int?
     
@@ -266,10 +272,19 @@ struct WorkflowRow: View {
             }
         }
         .padding(Token.Spacing.x3)
-        .background(isSelected ? Token.Color.brand.opacity(0.1) : Token.Color.surface.opacity(0.5))
+        .background(
+            isSelected ? Token.Color.brand.opacity(0.1) : 
+            isHovered ? Token.Color.surface.opacity(0.7) : 
+            Token.Color.surface.opacity(0.5)
+        )
         .overlay(
             RoundedRectangle(cornerRadius: Token.Radius.md)
-                .stroke(isSelected ? Token.Color.brand : Color.clear, lineWidth: 2)
+                .stroke(
+                    isSelected ? Token.Color.brand : 
+                    isHovered ? Token.Color.onSurface.opacity(0.2) : 
+                    Color.clear, 
+                    lineWidth: isSelected ? 2 : 1
+                )
         )
         .cornerRadius(Token.Radius.md)
     }
