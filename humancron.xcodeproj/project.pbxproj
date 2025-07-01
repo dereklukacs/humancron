@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		615575152E137A690098A923 /* DesignSystem in Frameworks */ = {isa = PBXBuildFile; productRef = 615575142E137A690098A923 /* DesignSystem */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		615574F12E135BF20098A923 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -52,6 +56,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				615575152E137A690098A923 /* DesignSystem in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -78,6 +83,7 @@
 				615574E42E135BF10098A923 /* humancron */,
 				615574F32E135BF20098A923 /* humancronTests */,
 				615574FD2E135BF20098A923 /* humancronUITests */,
+				615575102E137A480098A923 /* Frameworks */,
 				615574E32E135BF10098A923 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -90,6 +96,13 @@
 				615574FA2E135BF20098A923 /* humancronUITests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		615575102E137A480098A923 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -112,6 +125,7 @@
 			);
 			name = humancron;
 			packageProductDependencies = (
+				615575142E137A690098A923 /* DesignSystem */,
 			);
 			productName = humancron;
 			productReference = 615574E22E135BF10098A923 /* humancron.app */;
@@ -195,6 +209,9 @@
 			);
 			mainGroup = 615574D92E135BF10098A923;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				615575132E137A610098A923 /* XCLocalSwiftPackageReference "DesignSystem" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 615574E32E135BF10098A923 /* Products */;
 			projectDirPath = "";
@@ -551,6 +568,21 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		615575132E137A610098A923 /* XCLocalSwiftPackageReference "DesignSystem" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = DesignSystem;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		615575142E137A690098A923 /* DesignSystem */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 615575132E137A610098A923 /* XCLocalSwiftPackageReference "DesignSystem" */;
+			productName = DesignSystem;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 615574DA2E135BF10098A923 /* Project object */;
 }

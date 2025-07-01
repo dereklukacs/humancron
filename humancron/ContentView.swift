@@ -6,16 +6,26 @@
 //
 
 import SwiftUI
+import DesignSystem
 
 struct ContentView: View {
+    @State private var showGallery = false
+    
     var body: some View {
         VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+            if showGallery {
+                DesignSystemGallery()
+            } else {
+                DesignSystemExample()
+            }
         }
-        .padding()
+        .toolbar {
+            ToolbarItem {
+                Button(showGallery ? "Show Example" : "Show Gallery") {
+                    showGallery.toggle()
+                }
+            }
+        }
     }
 }
 
