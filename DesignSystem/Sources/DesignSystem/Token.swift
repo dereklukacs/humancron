@@ -63,8 +63,8 @@ public enum Token {
     }
     
     public enum Motion {
-        public static let fast: Double = 0.10
-        public static let normal: Double = 0.30
-        public static let slow: Double = 0.50
+        public static let fast: Double = 0.05
+        public static let normal: Double = 0.15
+        public static let slow: Double = 0.30
     }
 }
