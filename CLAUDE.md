@@ -76,4 +76,7 @@ The project is in initial state with boilerplate code. Key features to implement
 6. System tray indicator
 7. n8n webhook integration
 
-See `spec.md` for detailed requirements and user stories.
+See @spec.md for detailed requirements and user stories.
+
+
+Can you try to always build with @Makefile commands
