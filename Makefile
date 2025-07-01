@@ -32,3 +32,7 @@ test-all: test-design-system test
 # Open project in Xcode
 xcode:
 	open humancron.xcodeproj
+
+# Open the built app
+open:
+	open /Users/obsess/Library/Developer/Xcode/DerivedData/humancron-*/Build/Products/Debug/humancron.app
