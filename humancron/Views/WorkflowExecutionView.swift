@@ -50,9 +50,6 @@ struct WorkflowExecutionView: View {
             }
             .padding(.bottom, Token.Spacing.x4)
             
-            Divider()
-                .padding(.bottom, Token.Spacing.x3)
-            
             // Checklist of all steps
             ScrollViewReader { proxy in
                 ScrollView {
@@ -191,7 +188,7 @@ struct ChecklistStepRow: View {
     @State private var isHovered = false
     
     var body: some View {
-        HStack(alignment: .top, spacing: Token.Spacing.x3) {
+        HStack(alignment: .center, spacing: Token.Spacing.x3) {
             // Step indicator - fixed size for both states
             Button(action: {
                 // Toggle completion when clicking the circle
