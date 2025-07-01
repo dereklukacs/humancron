@@ -86,6 +86,17 @@ struct WorkflowExecutionView: View {
                             }
                             .foregroundColor(Token.Color.onBackground.opacity(0.6))
                         }
+                        
+                        if let _ = step.link {
+                            HStack {
+                                Image(systemName: appState.isLinkOpened(forStep: appState.currentStep) ? "checkmark.circle.fill" : "link.circle")
+                                    .font(.system(size: 14))
+                                    .foregroundColor(appState.isLinkOpened(forStep: appState.currentStep) ? Token.Color.success : Token.Color.onBackground.opacity(0.6))
+                                Text(appState.isLinkOpened(forStep: appState.currentStep) ? "Link opened" : "Has link")
+                                    .font(.system(size: 14))
+                                    .foregroundColor(appState.isLinkOpened(forStep: appState.currentStep) ? Token.Color.success : Token.Color.onBackground.opacity(0.6))
+                            }
+                        }
                     }
                     .padding(.leading, Token.Spacing.x4)
                 }
@@ -115,17 +126,17 @@ struct WorkflowExecutionView: View {
             // Action buttons
             VStack(spacing: Token.Spacing.x2) {
                 HStack(spacing: Token.Spacing.x3) {
-                    HStack(spacing: Token.Spacing.x2) {
-                        ShortcutHint("↵")
-                        Text("Next")
-                            .font(.system(size: 14))
-                    }
-                    .foregroundColor(Token.Color.onBackground.opacity(0.7))
-                    
-                    if currentStep?.link != nil {
+                    if let _ = currentStep?.link, !appState.isLinkOpened(forStep: appState.currentStep) {
                         HStack(spacing: Token.Spacing.x2) {
-                            ShortcutHint("⌘↵")
-                            Text("Next + Open Link")
+                            ShortcutHint("↵")
+                            Text("Open Link")
+                                .font(.system(size: 14))
+                        }
+                        .foregroundColor(Token.Color.onBackground.opacity(0.7))
+                    } else {
+                        HStack(spacing: Token.Spacing.x2) {
+                            ShortcutHint("↵")
+                            Text("Next")
                                 .font(.system(size: 14))
                         }
                         .foregroundColor(Token.Color.onBackground.opacity(0.7))
@@ -187,6 +198,7 @@ struct WorkflowExecutionView: View {
                 case 36: // Cmd+Enter - advance and trigger automation
                     if let link = currentStep?.link {
                         openLink(link)
+                        appState.markLinkAsOpened(forStep: appState.currentStep)
                     }
                     appState.nextStep()
                     return nil
@@ -200,9 +212,18 @@ struct WorkflowExecutionView: View {
             
             // Regular key handling
             switch event.keyCode {
-            case 36: // Enter only - just advance
+            case 36: // Enter only
                 if !event.modifierFlags.contains(.command) {
-                    appState.nextStep()
+                    // If step has a link and it hasn't been opened yet, open it
+                    if let link = currentStep?.link, !appState.isLinkOpened(forStep: appState.currentStep) {
+                        openLink(link)
+                        appState.markLinkAsOpened(forStep: appState.currentStep)
+                        // Hide the app so user can interact with the opened link
+                        appState.hideApp()
+                    } else {
+                        // Otherwise, advance to next step
+                        appState.nextStep()
+                    }
                     return nil
                 }
             case 53: // Escape

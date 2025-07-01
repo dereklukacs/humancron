@@ -28,7 +28,6 @@ struct ContentView: View {
         }
         .frame(width: appState.isActive ? 600 : 1, height: appState.isActive ? 400 : 1)
         .background(Color.clear)
-        .ignoresSafeArea()
         .onAppear {
             // Debug: Show notification when hotkey is pressed
             NotificationCenter.default.addObserver(
@@ -49,6 +48,7 @@ struct MainOverlayView: View {
         ZStack {
             // Background with blur effect
             VisualEffectBackground()
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             
             VStack(spacing: 0) {
                 if appState.currentWorkflow == nil {
@@ -60,7 +60,9 @@ struct MainOverlayView: View {
                 }
             }
             .padding(Token.Spacing.x4)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
+        .clipped()
         .cornerRadius(Token.Radius.lg)
         .shadow(radius: 20)
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.didResignActiveNotification)) { _ in
@@ -79,10 +81,14 @@ struct VisualEffectBackground: NSViewRepresentable {
         view.material = .hudWindow
         view.blendingMode = .behindWindow
         view.state = .active
+        view.wantsLayer = true
+        view.layer?.masksToBounds = true
         return view
     }
     
-    func updateNSView(_ nsView: NSVisualEffectView, context: Context) {}
+    func updateNSView(_ nsView: NSVisualEffectView, context: Context) {
+        nsView.layer?.masksToBounds = true
+    }
 }
 
 #Preview {

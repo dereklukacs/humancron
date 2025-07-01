@@ -9,6 +9,7 @@ class AppStateManager: ObservableObject {
     @Published var isActive = false
     @Published var currentWorkflow: Workflow?
     @Published var currentStep: Int = 0
+    @Published var openedLinksForSteps: Set<Int> = []
     
     private var window: NSWindow?
     private var preferencesWindow: NSWindow?
@@ -46,17 +47,13 @@ class AppStateManager: ObservableObject {
         window.isOpaque = false
         window.backgroundColor = .clear
         window.level = .floating
-        // Use titled window style to ensure proper text field focus
-        window.styleMask = [.titled, .fullSizeContentView]
-        window.titleVisibility = .hidden
-        window.titlebarAppearsTransparent = true
-        window.standardWindowButton(.closeButton)?.isHidden = true
-        window.standardWindowButton(.miniaturizeButton)?.isHidden = true
-        window.standardWindowButton(.zoomButton)?.isHidden = true
+        // Use borderless window style to remove all chrome
+        window.styleMask = [.borderless, .fullSizeContentView]
         window.isMovableByWindowBackground = true
         window.isReleasedWhenClosed = false
         window.hidesOnDeactivate = false
-        window.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
+        window.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .transient]
+        window.hasShadow = false // We'll add our own shadow
         
         // Initial center
         centerWindow()
@@ -149,6 +146,7 @@ class AppStateManager: ObservableObject {
     func startWorkflow(_ workflow: Workflow) {
         currentWorkflow = workflow
         currentStep = 0
+        openedLinksForSteps.removeAll()
         WorkflowHistoryService.shared.startWorkflow(workflow)
         notifyWorkflowChange()
     }
@@ -184,7 +182,16 @@ class AppStateManager: ObservableObject {
     
     func resetWorkflow() {
         currentStep = 0
+        openedLinksForSteps.removeAll()
         notifyWorkflowChange()
+    }
+    
+    func markLinkAsOpened(forStep step: Int) {
+        openedLinksForSteps.insert(step)
+    }
+    
+    func isLinkOpened(forStep step: Int) -> Bool {
+        return openedLinksForSteps.contains(step)
     }
     
     private func notifyWorkflowChange() {
