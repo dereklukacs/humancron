@@ -122,61 +122,6 @@ struct WorkflowExecutionView: View {
             }
             
             Spacer()
-            
-            // Action buttons
-            VStack(spacing: Token.Spacing.x2) {
-                HStack(spacing: Token.Spacing.x3) {
-                    if let _ = currentStep?.link, !appState.isLinkOpened(forStep: appState.currentStep) {
-                        HStack(spacing: Token.Spacing.x2) {
-                            ShortcutHint("↵")
-                            Text("Open Link")
-                                .font(.system(size: 14))
-                        }
-                        .foregroundColor(Token.Color.onBackground.opacity(0.7))
-                    } else {
-                        HStack(spacing: Token.Spacing.x2) {
-                            ShortcutHint("↵")
-                            Text("Next")
-                                .font(.system(size: 14))
-                        }
-                        .foregroundColor(Token.Color.onBackground.opacity(0.7))
-                    }
-                    
-                    Spacer()
-                    
-                    HStack(spacing: Token.Spacing.x2) {
-                        ShortcutHint("ESC")
-                        Text("Exit")
-                            .font(.system(size: 14))
-                    }
-                    .foregroundColor(Token.Color.onBackground.opacity(0.7))
-                }
-                
-                HStack(spacing: Token.Spacing.x3) {
-                    HStack(spacing: Token.Spacing.x2) {
-                        ShortcutHint("←")
-                        Text("Back")
-                            .font(.system(size: 14))
-                    }
-                    .foregroundColor(Token.Color.onBackground.opacity(0.7))
-                    
-                    HStack(spacing: Token.Spacing.x2) {
-                        ShortcutHint("→")
-                        Text("Skip")
-                            .font(.system(size: 14))
-                    }
-                    .foregroundColor(Token.Color.onBackground.opacity(0.7))
-                    
-                    HStack(spacing: Token.Spacing.x2) {
-                        ShortcutHint("⌘R")
-                        Text("Restart")
-                            .font(.system(size: 14))
-                    }
-                    .foregroundColor(Token.Color.onBackground.opacity(0.7))
-                    
-                    Spacer()
-                }
-            }
         }
         .onAppear {
             setupKeyboardHandling()

@@ -107,21 +107,6 @@ struct WorkflowSelectorView: View {
                 }
             }
             
-            // Help text
-            HStack {
-                Text("Press")
-                    .foregroundColor(Token.Color.onSurface.opacity(0.7))
-                ShortcutHint("↵")
-                Text("to select •")
-                    .foregroundColor(Token.Color.onSurface.opacity(0.7))
-                ShortcutHint("↑↓")
-                Text("to navigate •")
-                    .foregroundColor(Token.Color.onSurface.opacity(0.7))
-                ShortcutHint("ESC")
-                Text("to cancel")
-                    .foregroundColor(Token.Color.onSurface.opacity(0.7))
-            }
-            .font(.system(size: 12))
         }
         .onAppear {
             selectedIndex = 0

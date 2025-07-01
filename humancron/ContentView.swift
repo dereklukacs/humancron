@@ -44,6 +44,43 @@ struct ContentView: View {
 struct MainOverlayView: View {
     @EnvironmentObject var appState: AppStateManager
     
+    var hotkeyItems: [HotkeyItem] {
+        if appState.currentWorkflow == nil {
+            // Workflow selector hotkeys
+            return [
+                HotkeyItem("↵", "Select"),
+                HotkeyItem("↑↓", "Navigate"),
+                HotkeyItem("ESC", "Cancel")
+            ]
+        } else {
+            // Workflow execution hotkeys - dynamically built based on current step
+            var items: [HotkeyItem] = []
+            
+            if let workflow = appState.currentWorkflow,
+               let currentStep = workflow.steps[safe: appState.currentStep] {
+                
+                // Primary action - changes based on link state
+                if let _ = currentStep.link, !appState.isLinkOpened(forStep: appState.currentStep) {
+                    items.append(HotkeyItem("↵", "Open Link"))
+                } else {
+                    items.append(HotkeyItem("↵", "Next"))
+                }
+            }
+            
+            // Navigation
+            if appState.currentStep > 0 {
+                items.append(HotkeyItem("←", "Back"))
+            }
+            
+            // Always available actions
+            items.append(HotkeyItem("→", "Skip"))
+            items.append(HotkeyItem("⌘R", "Restart"))
+            items.append(HotkeyItem("ESC", "Exit"))
+            
+            return items
+        }
+    }
+    
     var body: some View {
         ZStack {
             // Background with blur effect
@@ -51,16 +88,22 @@ struct MainOverlayView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             
             VStack(spacing: 0) {
-                if appState.currentWorkflow == nil {
-                    // Show workflow selector
-                    WorkflowSelectorView()
-                } else {
-                    // Show workflow execution view
-                    WorkflowExecutionView()
+                // Main content
+                VStack(spacing: 0) {
+                    if appState.currentWorkflow == nil {
+                        // Show workflow selector
+                        WorkflowSelectorView()
+                    } else {
+                        // Show workflow execution view
+                        WorkflowExecutionView()
+                    }
                 }
+                .padding(Token.Spacing.x4)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                
+                // Hotkey bar at bottom
+                HotkeyBar(items: hotkeyItems)
             }
-            .padding(Token.Spacing.x4)
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .clipped()
         .cornerRadius(Token.Radius.lg)
