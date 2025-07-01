@@ -157,6 +157,9 @@ struct WorkflowExecutionView: View {
                     appState.currentStep += 1
                 }
                 return nil
+            case 123: // Left arrow - back to workflow list
+                appState.backToWorkflowList()
+                return nil
             default:
                 break
             }

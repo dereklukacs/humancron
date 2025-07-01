@@ -12,6 +12,12 @@ class AppStateManager: ObservableObject {
     @Published var openedLinksForSteps: Set<Int> = []
     @Published var completedSteps: Set<Int> = []
     
+    // Store paused workflow state
+    private var pausedWorkflow: Workflow?
+    private var pausedStep: Int = 0
+    private var pausedCompletedSteps: Set<Int> = []
+    private var pausedOpenedLinks: Set<Int> = []
+    
     private var window: NSWindow?
     private var preferencesWindow: NSWindow?
     private var onboardingWindow: NSWindow?
@@ -145,12 +151,17 @@ class AppStateManager: ObservableObject {
     
     // Workflow management
     func startWorkflow(_ workflow: Workflow) {
-        currentWorkflow = workflow
-        currentStep = 0
-        openedLinksForSteps.removeAll()
-        completedSteps.removeAll()
-        WorkflowHistoryService.shared.startWorkflow(workflow)
-        notifyWorkflowChange()
+        // Check if we have a paused version of this workflow
+        if hasPausedWorkflow(workflow) {
+            resumePausedWorkflow()
+        } else {
+            currentWorkflow = workflow
+            currentStep = 0
+            openedLinksForSteps.removeAll()
+            completedSteps.removeAll()
+            WorkflowHistoryService.shared.startWorkflow(workflow)
+            notifyWorkflowChange()
+        }
     }
     
     func toggleCurrentStepCompletion() {
@@ -220,11 +231,56 @@ class AppStateManager: ObservableObject {
     func completeWorkflow() {
         if let workflow = currentWorkflow {
             WorkflowHistoryService.shared.completeWorkflow(workflow, stepsCompleted: currentStep + 1)
+            
+            // Clear paused state if it's the same workflow
+            if pausedWorkflow?.id == workflow.id {
+                pausedWorkflow = nil
+                pausedStep = 0
+                pausedCompletedSteps.removeAll()
+                pausedOpenedLinks.removeAll()
+            }
         }
         currentWorkflow = nil
         currentStep = 0
+        completedSteps.removeAll()
+        openedLinksForSteps.removeAll()
         hideApp()
         notifyWorkflowChange()
+    }
+    
+    func backToWorkflowList() {
+        // Save current workflow state
+        if let workflow = currentWorkflow {
+            pausedWorkflow = workflow
+            pausedStep = currentStep
+            pausedCompletedSteps = completedSteps
+            pausedOpenedLinks = openedLinksForSteps
+        }
+        
+        // Clear current workflow to show list
+        currentWorkflow = nil
+        notifyWorkflowChange()
+    }
+    
+    func hasPausedWorkflow(_ workflow: Workflow) -> Bool {
+        return pausedWorkflow?.id == workflow.id
+    }
+    
+    func resumePausedWorkflow() {
+        if let paused = pausedWorkflow {
+            currentWorkflow = paused
+            currentStep = pausedStep
+            completedSteps = pausedCompletedSteps
+            openedLinksForSteps = pausedOpenedLinks
+            
+            // Clear paused state
+            pausedWorkflow = nil
+            pausedStep = 0
+            pausedCompletedSteps.removeAll()
+            pausedOpenedLinks.removeAll()
+            
+            notifyWorkflowChange()
+        }
     }
     
     func resetWorkflow() {

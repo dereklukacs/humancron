@@ -94,7 +94,8 @@ struct WorkflowSelectorView: View {
                                 isSelected: index == selectedIndex,
                                 isHovered: index == hoveredIndex,
                                 lastRun: historyService.getLastRun(for: workflow.id),
-                                shortcutNumber: nil
+                                shortcutNumber: nil,
+                                isPaused: appState.hasPausedWorkflow(workflow)
                             )
                             .onTapGesture {
                                 selectedIndex = index
@@ -206,13 +207,26 @@ struct WorkflowRow: View {
     let isHovered: Bool
     let lastRun: WorkflowRun?
     let shortcutNumber: Int?
+    let isPaused: Bool
     
     var body: some View {
         HStack {
             VStack(alignment: .leading, spacing: Token.Spacing.x1) {
-                Text(workflow.name)
-                    .font(.system(size: 15, weight: .medium))
-                    .foregroundColor(Token.Color.onSurface)
+                HStack(spacing: Token.Spacing.x2) {
+                    Text(workflow.name)
+                        .font(.system(size: 15, weight: .medium))
+                        .foregroundColor(Token.Color.onSurface)
+                    
+                    if isPaused {
+                        HStack(spacing: Token.Spacing.x1) {
+                            Image(systemName: "pause.circle.fill")
+                                .font(.system(size: 12))
+                            Text("In Progress")
+                                .font(.system(size: 11))
+                        }
+                        .foregroundColor(Token.Color.brand)
+                    }
+                }
                 
                 Text(workflow.description)
                     .font(.system(size: 13))

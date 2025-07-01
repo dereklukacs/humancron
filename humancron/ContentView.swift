@@ -84,6 +84,12 @@ struct MainOverlayView: View {
             
             // Navigation arrows
             items.append(HotkeyItem("↑↓", "Navigate"))  // No action - keyboard only
+            
+            // Back to workflow list
+            items.append(HotkeyItem("←", "Back", action: {
+                appState.backToWorkflowList()
+            }))
+            
             items.append(HotkeyItem("⌘R", "Restart", action: {
                 appState.resetWorkflow()
             }))
