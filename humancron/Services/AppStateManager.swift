@@ -11,6 +11,7 @@ class AppStateManager: ObservableObject {
     @Published var currentStep: Int = 0
     @Published var openedLinksForSteps: Set<Int> = []
     @Published var completedSteps: Set<Int> = []
+    @Published var isPinned = false
     
     // Store paused workflow state
     private var pausedWorkflow: Workflow?
@@ -129,7 +130,17 @@ class AppStateManager: ObservableObject {
         NSApp.activate(ignoringOtherApps: true)
     }
     
-    func hideApp() {
+    func hideApp(force: Bool = false) {
+        // Don't hide if pinned, unless forced
+        if isPinned && !force {
+            // Just restore focus to previous app without hiding the window
+            if let previousApp = previousApp {
+                print("Restoring focus to: \(previousApp.localizedName ?? "Unknown")")
+                previousApp.activate()
+            }
+            return
+        }
+        
         withAnimation(.easeIn(duration: Token.Motion.fast)) {
             isActive = false
         }

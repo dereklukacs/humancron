@@ -55,7 +55,7 @@ struct MainOverlayView: View {
                 }),
                 HotkeyItem("↑↓", "Navigate"),  // No action - keyboard only
                 HotkeyItem("ESC", "Cancel", action: {
-                    appState.hideApp()
+                    appState.hideApp(force: true)
                 })
             ]
         } else {
@@ -92,7 +92,7 @@ struct MainOverlayView: View {
             }))
             
             items.append(HotkeyItem("ESC", "Exit", action: {
-                appState.hideApp()
+                appState.hideApp(force: true)
                 appState.completeWorkflow()
             }))
             
@@ -112,10 +112,26 @@ struct MainOverlayView: View {
                     .fill(Color.clear)
                     .frame(height: 30)
                     .overlay(
-                        // Visual drag indicator
-                        Capsule()
-                            .fill(Token.Color.onSurface.opacity(0.1))
-                            .frame(width: 50, height: 4)
+                        ZStack {
+                            // Visual drag indicator in center
+                            Capsule()
+                                .fill(Token.Color.onSurface.opacity(0.1))
+                                .frame(width: 50, height: 4)
+                            
+                            // Pin button on the right
+                            HStack {
+                                Spacer()
+                                Button(action: {
+                                    appState.isPinned.toggle()
+                                }) {
+                                    Image(systemName: appState.isPinned ? "pin.fill" : "pin")
+                                        .font(.system(size: 14))
+                                        .foregroundColor(appState.isPinned ? Token.Color.brand : Token.Color.onSurface.opacity(0.6))
+                                }
+                                .buttonStyle(.plain)
+                                .padding(.trailing, Token.Spacing.x2)
+                            }
+                        }
                     )
                     .background(WindowDragView())
                 
@@ -141,8 +157,8 @@ struct MainOverlayView: View {
         .cornerRadius(Token.Radius.lg)
         .shadow(radius: 20)
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.didResignActiveNotification)) { _ in
-            // Hide when app loses focus
-            if appState.isActive && appState.currentWorkflow == nil {
+            // Hide when app loses focus only if not pinned
+            if appState.isActive && appState.currentWorkflow == nil && !appState.isPinned {
                 appState.hideApp()
             }
         }

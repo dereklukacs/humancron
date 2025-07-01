@@ -178,7 +178,7 @@ struct WorkflowSelectorView: View {
                     return nil // Consume the event
                     
                 case 53: // Escape
-                    appState.hideApp()
+                    appState.hideApp(force: true)
                     return nil // Consume the event
                     
                     

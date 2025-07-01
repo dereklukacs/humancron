@@ -137,7 +137,7 @@ struct WorkflowExecutionView: View {
                 }
                 return nil
             case 53: // Escape
-                appState.hideApp()
+                appState.hideApp(force: true)
                 appState.completeWorkflow()
                 return nil
             case 126: // Up arrow - navigate to previous step
