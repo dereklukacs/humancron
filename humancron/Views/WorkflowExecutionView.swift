@@ -157,13 +157,6 @@ struct WorkflowExecutionView: View {
                     .foregroundColor(Token.Color.onBackground.opacity(0.7))
                     
                     HStack(spacing: Token.Spacing.x2) {
-                        ShortcutHint("⌘S")
-                        Text("Skip")
-                            .font(.system(size: 14))
-                    }
-                    .foregroundColor(Token.Color.onBackground.opacity(0.7))
-                    
-                    HStack(spacing: Token.Spacing.x2) {
                         ShortcutHint("⌘R")
                         Text("Restart")
                             .font(.system(size: 14))
@@ -195,9 +188,6 @@ struct WorkflowExecutionView: View {
                     if let link = currentStep?.link {
                         openLink(link)
                     }
-                    appState.nextStep()
-                    return nil
-                case 1: // Cmd+S - skip current step
                     appState.nextStep()
                     return nil
                 case 15: // Cmd+R - restart workflow
