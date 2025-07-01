@@ -6,6 +6,7 @@ struct WorkflowSelectorView: View {
     @EnvironmentObject var appState: AppStateManager
     @StateObject private var workflowService = WorkflowService.shared
     @StateObject private var historyService = WorkflowHistoryService.shared
+    @StateObject private var faviconService = FaviconService.shared
     @State private var searchText = ""
     @State private var selectedIndex = 0
     @State private var hoveredIndex: Int? = nil
@@ -115,6 +116,8 @@ struct WorkflowSelectorView: View {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                 isSearchFieldFocused = true
             }
+            // Prefetch favicons for all workflows
+            faviconService.prefetchFavicons(for: workflowService.workflows)
         }
         .onDisappear {
             removeKeyboardHandling()

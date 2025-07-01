@@ -3,6 +3,7 @@ import DesignSystem
 
 struct WorkflowExecutionView: View {
     @EnvironmentObject var appState: AppStateManager
+    @StateObject private var faviconService = FaviconService.shared
     @State private var eventMonitor: Any?
     
     var currentStep: WorkflowStep? {
@@ -63,7 +64,8 @@ struct WorkflowExecutionView: View {
                                     stepNumber: index + 1,
                                     isCompleted: index < appState.currentStep,
                                     isCurrent: index == appState.currentStep,
-                                    isLinkOpened: appState.isLinkOpened(forStep: index)
+                                    isLinkOpened: appState.isLinkOpened(forStep: index),
+                                    favicon: step.link != nil ? faviconService.favicon(for: step.link!) : nil
                                 )
                                 .id(index)
                                 .onTapGesture {
@@ -91,6 +93,10 @@ struct WorkflowExecutionView: View {
         }
         .onAppear {
             setupKeyboardHandling()
+            // Prefetch favicons for current workflow
+            if let workflow = appState.currentWorkflow {
+                faviconService.prefetchFavicons(for: [workflow])
+            }
         }
         .onDisappear {
             removeKeyboardHandling()
@@ -191,6 +197,7 @@ struct ChecklistStepRow: View {
     let isCompleted: Bool
     let isCurrent: Bool
     let isLinkOpened: Bool
+    let favicon: NSImage?
     
     var body: some View {
         HStack(alignment: .top, spacing: Token.Spacing.x3) {
@@ -217,13 +224,28 @@ struct ChecklistStepRow: View {
                 // Always reserve space for link indicator
                 Group {
                     if let _ = step.link {
-                        Image(systemName: isLinkOpened ? "checkmark.circle.fill" : "link.circle")
-                            .font(.system(size: 14))
-                            .foregroundColor(isLinkOpened ? Token.Color.success : Token.Color.onBackground.opacity(0.5))
+                        HStack(spacing: Token.Spacing.x1) {
+                            // Favicon if available
+                            if let favicon = favicon {
+                                Image(nsImage: favicon)
+                                    .frame(width: 16, height: 16)
+                            } else {
+                                Image(systemName: "globe")
+                                    .font(.system(size: 14))
+                                    .foregroundColor(Token.Color.onBackground.opacity(0.5))
+                            }
+                            
+                            // Link status indicator
+                            if isLinkOpened {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .font(.system(size: 12))
+                                    .foregroundColor(Token.Color.success)
+                            }
+                        }
                     } else {
                         // Invisible spacer to maintain consistent width
                         Color.clear
-                            .frame(width: 14, height: 14)
+                            .frame(width: 16, height: 16)
                     }
                 }
                 
