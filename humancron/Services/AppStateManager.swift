@@ -158,8 +158,41 @@ class AppStateManager: ObservableObject {
             completedSteps.remove(currentStep)
         } else {
             completedSteps.insert(currentStep)
+            
+            // Check if all tasks are now completed
+            if let workflow = currentWorkflow,
+               completedSteps.count == workflow.steps.count {
+                // All tasks completed, close the workflow
+                completeWorkflow()
+                return
+            }
+            
+            // After marking as complete, move to next uncompleted task
+            moveToNextUncompletedStep()
         }
         notifyWorkflowChange()
+    }
+    
+    func moveToNextUncompletedStep() {
+        guard let workflow = currentWorkflow else { return }
+        
+        // Look for the next uncompleted step
+        for i in (currentStep + 1)..<workflow.steps.count {
+            if !completedSteps.contains(i) {
+                currentStep = i
+                return
+            }
+        }
+        
+        // If no uncompleted steps found after current, check from beginning
+        for i in 0..<currentStep {
+            if !completedSteps.contains(i) {
+                currentStep = i
+                return
+            }
+        }
+        
+        // If all steps are completed, stay on current step
     }
     
     func nextStep() {
