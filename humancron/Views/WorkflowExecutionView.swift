@@ -11,19 +11,13 @@ struct WorkflowExecutionView: View {
         return workflow.steps[appState.currentStep]
     }
     
-    var nextStep: WorkflowStep? {
-        guard let workflow = appState.currentWorkflow,
-              workflow.steps.indices.contains(appState.currentStep + 1) else { return nil }
-        return workflow.steps[appState.currentStep + 1]
-    }
-    
     var progress: Double {
         guard let workflow = appState.currentWorkflow else { return 0 }
-        return Double(appState.currentStep + 1) / Double(workflow.steps.count)
+        return Double(appState.currentStep) / Double(workflow.steps.count)
     }
     
     var body: some View {
-        VStack(spacing: Token.Spacing.x4) {
+        VStack(spacing: 0) {
             // Header with workflow name and progress
             VStack(spacing: Token.Spacing.x2) {
                 HStack {
@@ -53,75 +47,47 @@ struct WorkflowExecutionView: View {
                 }
                 .frame(height: 4)
             }
+            .padding(.bottom, Token.Spacing.x4)
             
             Divider()
+                .padding(.bottom, Token.Spacing.x3)
             
-            // Current step
-            if let step = currentStep {
-                VStack(alignment: .leading, spacing: Token.Spacing.x3) {
-                    Label {
-                        Text("Current Step")
-                            .font(.system(size: 12, weight: .medium))
-                            .foregroundColor(Token.Color.onBackground.opacity(0.6))
-                    } icon: {
-                        Image(systemName: "play.circle.fill")
-                            .foregroundColor(Token.Color.brand)
-                    }
-                    
-                    VStack(alignment: .leading, spacing: Token.Spacing.x2) {
-                        Text(step.name)
-                            .font(.system(size: 20, weight: .medium))
-                            .foregroundColor(Token.Color.onBackground)
-                        
-                        Text(step.description)
-                            .font(.system(size: 16))
-                            .foregroundColor(Token.Color.onBackground.opacity(0.8))
-                        
-                        if let duration = step.duration {
-                            HStack {
-                                Image(systemName: "timer")
-                                    .font(.system(size: 14))
-                                Text("\(Int(duration / 60)) minutes")
-                                    .font(.system(size: 14))
-                            }
-                            .foregroundColor(Token.Color.onBackground.opacity(0.6))
-                        }
-                        
-                        if let _ = step.link {
-                            HStack {
-                                Image(systemName: appState.isLinkOpened(forStep: appState.currentStep) ? "checkmark.circle.fill" : "link.circle")
-                                    .font(.system(size: 14))
-                                    .foregroundColor(appState.isLinkOpened(forStep: appState.currentStep) ? Token.Color.success : Token.Color.onBackground.opacity(0.6))
-                                Text(appState.isLinkOpened(forStep: appState.currentStep) ? "Link opened" : "Has link")
-                                    .font(.system(size: 14))
-                                    .foregroundColor(appState.isLinkOpened(forStep: appState.currentStep) ? Token.Color.success : Token.Color.onBackground.opacity(0.6))
+            // Checklist of all steps
+            ScrollViewReader { proxy in
+                ScrollView {
+                    VStack(spacing: Token.Spacing.x2) {
+                        if let workflow = appState.currentWorkflow {
+                            ForEach(Array(workflow.steps.enumerated()), id: \.element.id) { index, step in
+                                ChecklistStepRow(
+                                    step: step,
+                                    stepNumber: index + 1,
+                                    isCompleted: index < appState.currentStep,
+                                    isCurrent: index == appState.currentStep,
+                                    isLinkOpened: appState.isLinkOpened(forStep: index)
+                                )
+                                .id(index)
+                                .onTapGesture {
+                                    // Allow clicking on steps to jump to them
+                                    appState.currentStep = index
+                                }
                             }
                         }
                     }
-                    .padding(.leading, Token.Spacing.x4)
+                    .padding(.vertical, Token.Spacing.x1)
                 }
-            }
-            
-            // Next step preview
-            if let nextStep = nextStep {
-                VStack(alignment: .leading, spacing: Token.Spacing.x2) {
-                    Label {
-                        Text("Next")
-                            .font(.system(size: 12, weight: .medium))
-                            .foregroundColor(Token.Color.onBackground.opacity(0.5))
-                    } icon: {
-                        Image(systemName: "arrow.right.circle")
-                            .foregroundColor(Token.Color.onBackground.opacity(0.5))
+                .onChange(of: appState.currentStep) { newValue in
+                    // Scroll to current step when it changes
+                    withAnimation {
+                        proxy.scrollTo(newValue, anchor: .center)
                     }
-                    
-                    Text(nextStep.name)
-                        .font(.system(size: 14))
-                        .foregroundColor(Token.Color.onBackground.opacity(0.6))
-                        .padding(.leading, Token.Spacing.x4)
+                }
+                .onAppear {
+                    // Scroll to current step on appear
+                    proxy.scrollTo(appState.currentStep, anchor: .center)
                 }
             }
             
-            Spacer()
+            Spacer(minLength: 0)
         }
         .onAppear {
             setupKeyboardHandling()
@@ -171,15 +137,31 @@ struct WorkflowExecutionView: View {
                     }
                     return nil
                 }
+            case 49: // Spacebar - same as Enter for opening links
+                if let link = currentStep?.link, !appState.isLinkOpened(forStep: appState.currentStep) {
+                    openLink(link)
+                    appState.markLinkAsOpened(forStep: appState.currentStep)
+                    // Hide the app so user can interact with the opened link
+                    appState.hideApp()
+                } else {
+                    // Otherwise, advance to next step
+                    appState.nextStep()
+                }
+                return nil
             case 53: // Escape
                 appState.hideApp()
                 appState.completeWorkflow()
                 return nil
-            case 123: // Left arrow - go back
-                appState.previousStep()
+            case 126: // Up arrow - navigate to previous step
+                if appState.currentStep > 0 {
+                    appState.currentStep -= 1
+                }
                 return nil
-            case 124: // Right arrow - skip/next
-                appState.nextStep()
+            case 125: // Down arrow - navigate to next step
+                if let workflow = appState.currentWorkflow,
+                   appState.currentStep < workflow.steps.count - 1 {
+                    appState.currentStep += 1
+                }
                 return nil
             default:
                 break
@@ -198,5 +180,78 @@ struct WorkflowExecutionView: View {
             NSEvent.removeMonitor(monitor)
             eventMonitor = nil
         }
+    }
+}
+
+// MARK: - Checklist Step Row
+
+struct ChecklistStepRow: View {
+    let step: WorkflowStep
+    let stepNumber: Int
+    let isCompleted: Bool
+    let isCurrent: Bool
+    let isLinkOpened: Bool
+    
+    var body: some View {
+        HStack(alignment: .top, spacing: Token.Spacing.x3) {
+            // Step indicator - fixed size for both states
+            ZStack {
+                if isCompleted {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.system(size: 20))
+                        .foregroundColor(Token.Color.success)
+                } else {
+                    Circle()
+                        .stroke(Token.Color.onBackground.opacity(0.3), lineWidth: 2)
+                }
+            }
+            .frame(width: 24, height: 24) // Fixed frame for consistent sizing
+            
+            // Step content
+            HStack(spacing: Token.Spacing.x2) {
+                Text(step.name)
+                    .font(.system(size: 16, weight: isCurrent ? .semibold : .medium))
+                    .foregroundColor(isCompleted ? Token.Color.onBackground.opacity(0.5) : Token.Color.onBackground)
+                    .strikethrough(isCompleted, color: Token.Color.onBackground.opacity(0.5))
+                
+                // Always reserve space for link indicator
+                Group {
+                    if let _ = step.link {
+                        Image(systemName: isLinkOpened ? "checkmark.circle.fill" : "link.circle")
+                            .font(.system(size: 14))
+                            .foregroundColor(isLinkOpened ? Token.Color.success : Token.Color.onBackground.opacity(0.5))
+                    } else {
+                        // Invisible spacer to maintain consistent width
+                        Color.clear
+                            .frame(width: 14, height: 14)
+                    }
+                }
+                
+                if let duration = step.duration {
+                    Spacer()
+                    HStack(spacing: Token.Spacing.x1) {
+                        Image(systemName: "timer")
+                            .font(.system(size: 12))
+                        Text("~\(Int(duration / 60)) min")
+                            .font(.system(size: 12))
+                    }
+                    .foregroundColor(Token.Color.onBackground.opacity(0.5))
+                }
+            }
+            
+            Spacer()
+        }
+        .padding(.horizontal, Token.Spacing.x3)
+        .padding(.vertical, Token.Spacing.x2)
+        .background(
+            RoundedRectangle(cornerRadius: Token.Radius.md)
+                .fill(isCurrent ? Token.Color.brand.opacity(0.1) : Color.clear)
+                .animation(.easeInOut(duration: 0.2), value: isCurrent)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: Token.Radius.md)
+                .stroke(Token.Color.brand.opacity(isCurrent ? 1.0 : 0.0), lineWidth: 2)
+                .animation(.easeInOut(duration: 0.2), value: isCurrent)
+        )
     }
 }
