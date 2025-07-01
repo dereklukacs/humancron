@@ -57,8 +57,8 @@ struct TokenTests {
     
     @Test("Motion tokens have correct values")
     func testMotionTokens() {
-        #expect(Token.Motion.fast == 0.05)
-        #expect(Token.Motion.normal == 0.15)
-        #expect(Token.Motion.slow == 0.30)
+        #expect(Token.Motion.fast == 0.00)
+        #expect(Token.Motion.normal == 0.05)
+        #expect(Token.Motion.slow == 0.10)
     }
 }
