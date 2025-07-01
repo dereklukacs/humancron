@@ -12,6 +12,7 @@ class AppStateManager: ObservableObject {
     
     private var window: NSWindow?
     private var preferencesWindow: NSWindow?
+    private var onboardingWindow: NSWindow?
     private var cancellables = Set<AnyCancellable>()
     
     private init() {
@@ -208,6 +209,43 @@ class AppStateManager: ObservableObject {
     
     func closePreferences() {
         preferencesWindow?.close()
+    }
+    
+    // MARK: - Onboarding Window
+    
+    func showOnboardingIfNeeded() {
+        let settings = SettingsService.shared
+        if !settings.hasCompletedOnboarding {
+            showOnboarding()
+        }
+    }
+    
+    func showOnboarding() {
+        if onboardingWindow == nil {
+            let onboardingView = OnboardingView()
+            let hostingController = NSHostingController(rootView: onboardingView)
+            
+            let window = NSWindow(
+                contentRect: NSRect(x: 0, y: 0, width: 600, height: 500),
+                styleMask: [.titled, .closable],
+                backing: .buffered,
+                defer: false
+            )
+            window.title = "Welcome to HumanCron"
+            window.contentViewController = hostingController
+            window.center()
+            window.isReleasedWhenClosed = false
+            
+            onboardingWindow = window
+        }
+        
+        onboardingWindow?.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
+    }
+    
+    func closeOnboarding() {
+        onboardingWindow?.close()
+        onboardingWindow = nil
     }
 }
 

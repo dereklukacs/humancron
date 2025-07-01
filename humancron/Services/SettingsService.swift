@@ -11,6 +11,8 @@ class SettingsService: ObservableObject {
     @AppStorage("workflowsDirectory") var workflowsDirectory: String = ""
     @AppStorage("windowPosition") var windowPosition: String = ""
     @AppStorage("windowSize") var windowSize: String = ""
+    @AppStorage("hasCompletedOnboarding") var hasCompletedOnboarding: Bool = false
+    @AppStorage("hasCreatedSampleWorkflows") var hasCreatedSampleWorkflows: Bool = false
     
     // Hotkey components
     @Published var hotkeyModifiers: NSEvent.ModifierFlags = .option

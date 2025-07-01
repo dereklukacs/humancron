@@ -1,5 +1,6 @@
 import SwiftUI
 import DesignSystem
+import AppKit
 
 struct WorkflowSelectorView: View {
     @EnvironmentObject var appState: AppStateManager
@@ -7,6 +8,7 @@ struct WorkflowSelectorView: View {
     @StateObject private var historyService = WorkflowHistoryService.shared
     @State private var searchText = ""
     @State private var selectedIndex = 0
+    @State private var eventMonitor: Any?
     
     var filteredWorkflows: [Workflow] {
         if searchText.isEmpty {
@@ -86,7 +88,8 @@ struct WorkflowSelectorView: View {
                             WorkflowRow(
                                 workflow: workflow,
                                 isSelected: index == selectedIndex,
-                                lastRun: historyService.getLastRun(for: workflow.id)
+                                lastRun: historyService.getLastRun(for: workflow.id),
+                                shortcutNumber: index < 9 ? index + 1 : nil
                             )
                             .onTapGesture {
                                 selectedIndex = index
@@ -101,8 +104,14 @@ struct WorkflowSelectorView: View {
             HStack {
                 Text("Press")
                     .foregroundColor(Token.Color.onSurface.opacity(0.7))
+                ShortcutHint("1-9")
+                Text("or")
+                    .foregroundColor(Token.Color.onSurface.opacity(0.7))
                 ShortcutHint("↵")
-                Text("to select or")
+                Text("to select •")
+                    .foregroundColor(Token.Color.onSurface.opacity(0.7))
+                ShortcutHint("↑↓")
+                Text("to navigate •")
                     .foregroundColor(Token.Color.onSurface.opacity(0.7))
                 ShortcutHint("ESC")
                 Text("to cancel")
@@ -112,16 +121,58 @@ struct WorkflowSelectorView: View {
         }
         .onAppear {
             selectedIndex = 0
+            setupKeyboardHandling()
         }
-        .onReceive(NotificationCenter.default.publisher(for: .init("arrowUp"))) { _ in
-            if selectedIndex > 0 {
-                selectedIndex -= 1
+        .onDisappear {
+            removeKeyboardHandling()
+        }
+    }
+    
+    private func setupKeyboardHandling() {
+        // Remove any existing monitor
+        removeKeyboardHandling()
+        
+        // Add new monitor for keyboard events
+        eventMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
+            switch event.keyCode {
+            case 126: // Arrow Up
+                if selectedIndex > 0 {
+                    selectedIndex -= 1
+                }
+                return nil // Consume the event
+                
+            case 125: // Arrow Down
+                if selectedIndex < filteredWorkflows.count - 1 {
+                    selectedIndex += 1
+                }
+                return nil // Consume the event
+                
+            case 36: // Enter
+                selectWorkflow()
+                return nil // Consume the event
+                
+            case 53: // Escape
+                appState.hideApp()
+                return nil // Consume the event
+                
+            case 18...26: // Number keys 1-9
+                let number = Int(event.keyCode - 17) // Convert keyCode to number (1-9)
+                if number <= filteredWorkflows.count {
+                    selectedIndex = number - 1
+                    selectWorkflow()
+                }
+                return nil // Consume the event
+                
+            default:
+                return event // Let the event pass through
             }
         }
-        .onReceive(NotificationCenter.default.publisher(for: .init("arrowDown"))) { _ in
-            if selectedIndex < filteredWorkflows.count - 1 {
-                selectedIndex += 1
-            }
+    }
+    
+    private func removeKeyboardHandling() {
+        if let monitor = eventMonitor {
+            NSEvent.removeMonitor(monitor)
+            eventMonitor = nil
         }
     }
     
@@ -136,9 +187,26 @@ struct WorkflowRow: View {
     let workflow: Workflow
     let isSelected: Bool
     let lastRun: WorkflowRun?
+    let shortcutNumber: Int?
     
     var body: some View {
         HStack {
+            // Shortcut number indicator
+            if let number = shortcutNumber {
+                Text("\(number)")
+                    .font(.system(size: 14, weight: .medium, design: .monospaced))
+                    .foregroundColor(isSelected ? Token.Color.brand : Token.Color.onSurface.opacity(0.5))
+                    .frame(width: 24, height: 24)
+                    .background(
+                        Circle()
+                            .fill(isSelected ? Token.Color.brand.opacity(0.2) : Token.Color.surface.opacity(0.8))
+                    )
+                    .overlay(
+                        Circle()
+                            .stroke(isSelected ? Token.Color.brand : Token.Color.onSurface.opacity(0.2), lineWidth: 1)
+                    )
+            }
+            
             VStack(alignment: .leading, spacing: Token.Spacing.x1) {
                 Text(workflow.name)
                     .font(.system(size: 15, weight: .medium))

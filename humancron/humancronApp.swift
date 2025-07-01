@@ -63,6 +63,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Setup system tray
         SystemTrayService.shared.setup()
         print("System tray setup complete")
+        
+        // Show onboarding if needed
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            AppStateManager.shared.showOnboardingIfNeeded()
+        }
     }
     
     func applicationWillTerminate(_ notification: Notification) {
