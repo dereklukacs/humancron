@@ -3,6 +3,7 @@ import DesignSystem
 
 struct WorkflowExecutionView: View {
     @EnvironmentObject var appState: AppStateManager
+    @State private var eventMonitor: Any?
     
     var currentStep: WorkflowStep? {
         guard let workflow = appState.currentWorkflow,
@@ -112,66 +113,114 @@ struct WorkflowExecutionView: View {
             Spacer()
             
             // Action buttons
-            HStack(spacing: Token.Spacing.x3) {
-                HStack(spacing: Token.Spacing.x2) {
-                    ShortcutHint("↵")
-                    Text("Next")
-                        .font(.system(size: 14))
-                }
-                .foregroundColor(Token.Color.onBackground.opacity(0.7))
-                
-                if currentStep?.link != nil {
+            VStack(spacing: Token.Spacing.x2) {
+                HStack(spacing: Token.Spacing.x3) {
                     HStack(spacing: Token.Spacing.x2) {
-                        ShortcutHint("⌘↵")
-                        Text("Next + Open Link")
+                        ShortcutHint("↵")
+                        Text("Next")
+                            .font(.system(size: 14))
+                    }
+                    .foregroundColor(Token.Color.onBackground.opacity(0.7))
+                    
+                    if currentStep?.link != nil {
+                        HStack(spacing: Token.Spacing.x2) {
+                            ShortcutHint("⌘↵")
+                            Text("Next + Open Link")
+                                .font(.system(size: 14))
+                        }
+                        .foregroundColor(Token.Color.onBackground.opacity(0.7))
+                    }
+                    
+                    Spacer()
+                    
+                    HStack(spacing: Token.Spacing.x2) {
+                        ShortcutHint("ESC")
+                        Text("Exit")
                             .font(.system(size: 14))
                     }
                     .foregroundColor(Token.Color.onBackground.opacity(0.7))
                 }
                 
-                Spacer()
-                
-                HStack(spacing: Token.Spacing.x2) {
-                    ShortcutHint("ESC")
-                    Text("Exit")
-                        .font(.system(size: 14))
+                HStack(spacing: Token.Spacing.x3) {
+                    HStack(spacing: Token.Spacing.x2) {
+                        ShortcutHint("⌘S")
+                        Text("Skip")
+                            .font(.system(size: 14))
+                    }
+                    .foregroundColor(Token.Color.onBackground.opacity(0.7))
+                    
+                    HStack(spacing: Token.Spacing.x2) {
+                        ShortcutHint("⌘R")
+                        Text("Restart")
+                            .font(.system(size: 14))
+                    }
+                    .foregroundColor(Token.Color.onBackground.opacity(0.7))
+                    
+                    Spacer()
                 }
-                .foregroundColor(Token.Color.onBackground.opacity(0.7))
             }
         }
         .onAppear {
             setupKeyboardHandling()
         }
+        .onDisappear {
+            removeKeyboardHandling()
+        }
     }
     
     private func setupKeyboardHandling() {
-        NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
-            switch event.keyCode {
-            case 36: // Enter
-                if event.modifierFlags.contains(.command) {
-                    // Cmd+Enter - advance and trigger automation
+        // Remove any existing monitor
+        removeKeyboardHandling()
+        
+        // Add new monitor
+        eventMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
+            // Check for command key combinations
+            if event.modifierFlags.contains(.command) {
+                switch event.keyCode {
+                case 36: // Cmd+Enter - advance and trigger automation
                     if let link = currentStep?.link {
                         openLink(link)
                     }
                     appState.nextStep()
-                } else {
-                    // Enter only - just advance
+                    return nil
+                case 1: // Cmd+S - skip current step
                     appState.nextStep()
+                    return nil
+                case 15: // Cmd+R - restart workflow
+                    appState.resetWorkflow()
+                    return nil
+                default:
+                    break
                 }
-                return nil
+            }
+            
+            // Regular key handling
+            switch event.keyCode {
+            case 36: // Enter only - just advance
+                if !event.modifierFlags.contains(.command) {
+                    appState.nextStep()
+                    return nil
+                }
             case 53: // Escape
                 appState.hideApp()
                 appState.completeWorkflow()
                 return nil
             default:
-                return event
+                break
             }
+            
+            return event
         }
     }
     
     private func openLink(_ link: String) {
-        if let url = URL(string: link) {
-            NSWorkspace.shared.open(url)
+        LinkOpenerService.shared.openLink(link)
+    }
+    
+    private func removeKeyboardHandling() {
+        if let monitor = eventMonitor {
+            NSEvent.removeMonitor(monitor)
+            eventMonitor = nil
         }
     }
 }

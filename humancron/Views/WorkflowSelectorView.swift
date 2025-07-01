@@ -4,6 +4,7 @@ import DesignSystem
 struct WorkflowSelectorView: View {
     @EnvironmentObject var appState: AppStateManager
     @StateObject private var workflowService = WorkflowService.shared
+    @StateObject private var historyService = WorkflowHistoryService.shared
     @State private var searchText = ""
     @State private var selectedIndex = 0
     
@@ -84,7 +85,8 @@ struct WorkflowSelectorView: View {
                         ForEach(Array(filteredWorkflows.enumerated()), id: \.element.id) { index, workflow in
                             WorkflowRow(
                                 workflow: workflow,
-                                isSelected: index == selectedIndex
+                                isSelected: index == selectedIndex,
+                                lastRun: historyService.getLastRun(for: workflow.id)
                             )
                             .onTapGesture {
                                 selectedIndex = index
@@ -133,6 +135,7 @@ struct WorkflowSelectorView: View {
 struct WorkflowRow: View {
     let workflow: Workflow
     let isSelected: Bool
+    let lastRun: WorkflowRun?
     
     var body: some View {
         HStack {
@@ -148,9 +151,17 @@ struct WorkflowRow: View {
             
             Spacer()
             
-            Text("\(workflow.steps.count) steps")
-                .font(.system(size: 12))
-                .foregroundColor(Token.Color.onSurface.opacity(0.5))
+            VStack(alignment: .trailing, spacing: 2) {
+                Text("\(workflow.steps.count) steps")
+                    .font(.system(size: 12))
+                    .foregroundColor(Token.Color.onSurface.opacity(0.5))
+                
+                if let lastRun = lastRun {
+                    Text(WorkflowHistoryService.shared.formatLastRunTime(lastRun.startedAt))
+                        .font(.system(size: 11))
+                        .foregroundColor(Token.Color.onSurface.opacity(0.4))
+                }
+            }
         }
         .padding(Token.Spacing.x3)
         .background(isSelected ? Token.Color.brand.opacity(0.1) : Token.Color.surface.opacity(0.5))

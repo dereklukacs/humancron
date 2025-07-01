@@ -43,11 +43,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Setup window properly
         DispatchQueue.main.async {
             if let window = NSApp.windows.first {
-                // Make window visible for debugging
-                window.makeKeyAndOrderFront(nil)
-                window.center()
-                NSApp.activate(ignoringOtherApps: true)
-                
+                // Setup app state manager with window
                 AppStateManager.shared.setup(window: window)
                 
                 // Check accessibility permissions

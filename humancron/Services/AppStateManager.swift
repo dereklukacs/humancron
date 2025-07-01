@@ -48,12 +48,18 @@ class AppStateManager: ObservableObject {
         window.hidesOnDeactivate = false
         window.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
         
-        // Center window
+        // Initial center
+        centerWindow()
+    }
+    
+    private func centerWindow() {
+        guard let window = window else { return }
+        
         if let screen = NSScreen.main {
             let screenFrame = screen.frame
             let windowSize = CGSize(width: 600, height: 400)
-            let x = (screenFrame.width - windowSize.width) / 2
-            let y = (screenFrame.height - windowSize.height) / 2
+            let x = screenFrame.origin.x + (screenFrame.width - windowSize.width) / 2
+            let y = screenFrame.origin.y + (screenFrame.height - windowSize.height) / 2
             window.setFrame(NSRect(origin: CGPoint(x: x, y: y), size: windowSize), display: true)
         }
     }
@@ -93,6 +99,9 @@ class AppStateManager: ObservableObject {
         
         print("Showing app window")
         
+        // Center window before showing
+        centerWindow()
+        
         withAnimation(.easeOut(duration: Token.Motion.fast)) {
             isActive = true
         }
@@ -120,6 +129,7 @@ class AppStateManager: ObservableObject {
     func startWorkflow(_ workflow: Workflow) {
         currentWorkflow = workflow
         currentStep = 0
+        WorkflowHistoryService.shared.startWorkflow(workflow)
         notifyWorkflowChange()
     }
     
@@ -143,6 +153,9 @@ class AppStateManager: ObservableObject {
     }
     
     func completeWorkflow() {
+        if let workflow = currentWorkflow {
+            WorkflowHistoryService.shared.completeWorkflow(workflow, stepsCompleted: currentStep + 1)
+        }
         currentWorkflow = nil
         currentStep = 0
         hideApp()
