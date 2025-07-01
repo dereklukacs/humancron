@@ -9,6 +9,7 @@ struct WorkflowSelectorView: View {
     @State private var searchText = ""
     @State private var selectedIndex = 0
     @State private var eventMonitor: Any?
+    @FocusState private var isSearchFieldFocused: Bool
     
     var filteredWorkflows: [Workflow] {
         if searchText.isEmpty {
@@ -30,6 +31,7 @@ struct WorkflowSelectorView: View {
                 TextField("Search workflows...", text: $searchText)
                     .textFieldStyle(.plain)
                     .font(.system(size: 16))
+                    .focused($isSearchFieldFocused)
                     .onSubmit {
                         selectWorkflow()
                     }
@@ -122,6 +124,10 @@ struct WorkflowSelectorView: View {
         .onAppear {
             selectedIndex = 0
             setupKeyboardHandling()
+            // Focus the search field after a small delay to ensure the view is fully loaded
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                isSearchFieldFocused = true
+            }
         }
         .onDisappear {
             removeKeyboardHandling()
@@ -134,38 +140,66 @@ struct WorkflowSelectorView: View {
         
         // Add new monitor for keyboard events
         eventMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
-            switch event.keyCode {
-            case 126: // Arrow Up
-                if selectedIndex > 0 {
-                    selectedIndex -= 1
+            // Get the first responder to check if search field is focused
+            let firstResponder = NSApp.keyWindow?.firstResponder
+            let isTextFieldFocused = firstResponder is NSTextView
+            
+            // Check if we're typing in the search field (no modifiers except shift)
+            let hasModifiers = event.modifierFlags.contains(.command) || 
+                             event.modifierFlags.contains(.control) || 
+                             event.modifierFlags.contains(.option)
+            
+            // If text field is focused and we're typing regular characters, let them through
+            if isTextFieldFocused && !hasModifiers {
+                switch event.keyCode {
+                case 126, 125, 36, 53: // Arrow keys, Enter, Escape
+                    // Handle navigation keys even when text field is focused
+                    break
+                default:
+                    // Let all other keys through for typing
+                    return event
                 }
-                return nil // Consume the event
-                
-            case 125: // Arrow Down
-                if selectedIndex < filteredWorkflows.count - 1 {
-                    selectedIndex += 1
-                }
-                return nil // Consume the event
-                
-            case 36: // Enter
-                selectWorkflow()
-                return nil // Consume the event
-                
-            case 53: // Escape
-                appState.hideApp()
-                return nil // Consume the event
-                
-            case 18...26: // Number keys 1-9
-                let number = Int(event.keyCode - 17) // Convert keyCode to number (1-9)
-                if number <= filteredWorkflows.count {
-                    selectedIndex = number - 1
-                    selectWorkflow()
-                }
-                return nil // Consume the event
-                
-            default:
-                return event // Let the event pass through
             }
+            
+            if !hasModifiers {
+                switch event.keyCode {
+                case 126: // Arrow Up
+                    if selectedIndex > 0 {
+                        selectedIndex -= 1
+                    }
+                    return nil // Consume the event
+                    
+                case 125: // Arrow Down
+                    if selectedIndex < filteredWorkflows.count - 1 {
+                        selectedIndex += 1
+                    }
+                    return nil // Consume the event
+                    
+                case 36: // Enter
+                    selectWorkflow()
+                    return nil // Consume the event
+                    
+                case 53: // Escape
+                    appState.hideApp()
+                    return nil // Consume the event
+                    
+                case 18...26: // Number keys 1-9
+                    // Only handle number keys if text field is not focused
+                    if !isTextFieldFocused {
+                        let number = Int(event.keyCode - 17) // Convert keyCode to number (1-9)
+                        if number <= filteredWorkflows.count {
+                            selectedIndex = number - 1
+                            selectWorkflow()
+                        }
+                        return nil // Consume the event
+                    }
+                    
+                default:
+                    break // Let the event pass through
+                }
+            }
+            
+            return event // Let the event pass through for typing
         }
     }
     

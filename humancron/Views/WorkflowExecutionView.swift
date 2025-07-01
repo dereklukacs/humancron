@@ -143,6 +143,20 @@ struct WorkflowExecutionView: View {
                 
                 HStack(spacing: Token.Spacing.x3) {
                     HStack(spacing: Token.Spacing.x2) {
+                        ShortcutHint("←")
+                        Text("Back")
+                            .font(.system(size: 14))
+                    }
+                    .foregroundColor(Token.Color.onBackground.opacity(0.7))
+                    
+                    HStack(spacing: Token.Spacing.x2) {
+                        ShortcutHint("→")
+                        Text("Skip")
+                            .font(.system(size: 14))
+                    }
+                    .foregroundColor(Token.Color.onBackground.opacity(0.7))
+                    
+                    HStack(spacing: Token.Spacing.x2) {
                         ShortcutHint("⌘S")
                         Text("Skip")
                             .font(.system(size: 14))
@@ -204,6 +218,12 @@ struct WorkflowExecutionView: View {
             case 53: // Escape
                 appState.hideApp()
                 appState.completeWorkflow()
+                return nil
+            case 123: // Left arrow - go back
+                appState.previousStep()
+                return nil
+            case 124: // Right arrow - skip/next
+                appState.nextStep()
                 return nil
             default:
                 break

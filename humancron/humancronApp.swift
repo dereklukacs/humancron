@@ -25,6 +25,12 @@ struct humancronApp: App {
             ContentView()
                 .environmentObject(appState)
                 .environmentObject(hotkeyService)
+                .background(WindowAccessor { window in
+                    // Configure the window when it's created
+                    DispatchQueue.main.async {
+                        AppStateManager.shared.setup(window: window)
+                    }
+                })
         }
         .windowStyle(.hiddenTitleBar)
         .windowResizability(.contentSize)
@@ -48,17 +54,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Keep in dock for debugging
         NSApp.setActivationPolicy(.regular)
         
-        // Setup window properly
-        DispatchQueue.main.async {
-            if let window = NSApp.windows.first {
-                // Setup app state manager with window
-                AppStateManager.shared.setup(window: window)
-                
-                // Check accessibility permissions
-                let hasPermissions = ModernHotkeyService.shared.requestAccessibilityPermissions()
-                print("Accessibility permissions: \(hasPermissions)")
-            }
-        }
+        // Check accessibility permissions
+        let hasPermissions = ModernHotkeyService.shared.requestAccessibilityPermissions()
+        print("Accessibility permissions: \(hasPermissions)")
         
         // Setup system tray
         SystemTrayService.shared.setup()

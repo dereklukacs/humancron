@@ -28,6 +28,7 @@ struct ContentView: View {
         }
         .frame(width: appState.isActive ? 600 : 1, height: appState.isActive ? 400 : 1)
         .background(Color.clear)
+        .ignoresSafeArea()
         .onAppear {
             // Debug: Show notification when hotkey is pressed
             NotificationCenter.default.addObserver(

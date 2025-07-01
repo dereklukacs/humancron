@@ -45,7 +45,14 @@ class AppStateManager: ObservableObject {
         window.isOpaque = false
         window.backgroundColor = .clear
         window.level = .floating
-        window.styleMask = [.borderless, .fullSizeContentView]
+        // Use titled window style to ensure proper text field focus
+        window.styleMask = [.titled, .fullSizeContentView]
+        window.titleVisibility = .hidden
+        window.titlebarAppearsTransparent = true
+        window.standardWindowButton(.closeButton)?.isHidden = true
+        window.standardWindowButton(.miniaturizeButton)?.isHidden = true
+        window.standardWindowButton(.zoomButton)?.isHidden = true
+        window.isMovableByWindowBackground = true
         window.isReleasedWhenClosed = false
         window.hidesOnDeactivate = false
         window.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
