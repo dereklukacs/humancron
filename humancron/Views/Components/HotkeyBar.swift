@@ -25,7 +25,7 @@ struct HotkeyBar: View {
         .padding(.horizontal, Token.Spacing.x1)
         .padding(.vertical, Token.Spacing.x2)
         .frame(maxWidth: .infinity)
-        .background(Token.Color.surface.opacity(0.8))
+        .background(Token.Color.surface.opacity(0.9))
         .overlay(
             Rectangle()
                 .frame(height: 1)

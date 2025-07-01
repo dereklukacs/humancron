@@ -153,8 +153,8 @@ struct MainOverlayView: View {
 struct VisualEffectBackground: NSViewRepresentable {
     func makeNSView(context: Context) -> NSVisualEffectView {
         let view = NSVisualEffectView()
-        view.material = .hudWindow
-        view.blendingMode = .behindWindow
+        view.material = .sidebar
+        view.blendingMode = .withinWindow
         view.state = .active
         view.wantsLayer = true
         view.layer?.masksToBounds = true
