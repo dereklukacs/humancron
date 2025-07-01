@@ -14,6 +14,7 @@ class AppStateManager: ObservableObject {
     private var preferencesWindow: NSWindow?
     private var onboardingWindow: NSWindow?
     private var cancellables = Set<AnyCancellable>()
+    private var previousApp: NSRunningApplication?
     
     private init() {
         setupNotifications()
@@ -87,6 +88,10 @@ class AppStateManager: ObservableObject {
             return 
         }
         
+        // Save the currently active application before we activate
+        previousApp = NSWorkspace.shared.frontmostApplication
+        print("Saved previous app: \(previousApp?.localizedName ?? "None")")
+        
         // Ensure we have accessibility permissions
         let hasPermissions = ModernHotkeyService.shared.requestAccessibilityPermissions()
         print("Accessibility permissions: \(hasPermissions)")
@@ -127,6 +132,12 @@ class AppStateManager: ObservableObject {
         
         // Hide window
         window?.orderOut(nil)
+        
+        // Restore focus to the previous application
+        if let previousApp = previousApp {
+            print("Restoring focus to: \(previousApp.localizedName ?? "Unknown")")
+            previousApp.activate()
+        }
         
         // Reset state if no workflow is active
         if currentWorkflow == nil {
