@@ -54,8 +54,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         print("App launched!")
         
-        // Keep in dock for debugging
-        NSApp.setActivationPolicy(.regular)
+        // Hide from dock and app switcher
+        NSApp.setActivationPolicy(.accessory)
         
         // Check accessibility permissions
         let hasPermissions = ModernHotkeyService.shared.requestAccessibilityPermissions()
