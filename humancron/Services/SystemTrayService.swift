@@ -45,29 +45,35 @@ class SystemTrayService: ObservableObject {
         menu.addItem(NSMenuItem.separator())
         
         // Open app
-        menu.addItem(NSMenuItem(
+        let openItem = NSMenuItem(
             title: "Open HumanCron",
             action: #selector(openApp),
             keyEquivalent: "o"
-        ))
+        )
+        openItem.target = self
+        menu.addItem(openItem)
         
         menu.addItem(NSMenuItem.separator())
         
         // Preferences
-        menu.addItem(NSMenuItem(
+        let preferencesItem = NSMenuItem(
             title: "Preferences...",
             action: #selector(openPreferences),
             keyEquivalent: ","
-        ))
+        )
+        preferencesItem.target = self
+        menu.addItem(preferencesItem)
         
         menu.addItem(NSMenuItem.separator())
         
         // Quit
-        menu.addItem(NSMenuItem(
+        let quitItem = NSMenuItem(
             title: "Quit HumanCron",
             action: #selector(quitApp),
             keyEquivalent: "q"
-        ))
+        )
+        quitItem.target = self
+        menu.addItem(quitItem)
         
         self.statusItem?.menu = menu
         statusBarMenu = menu
@@ -113,8 +119,7 @@ class SystemTrayService: ObservableObject {
     }
     
     @objc private func openPreferences() {
-        // TODO: Implement preferences window
-        print("Opening preferences...")
+        AppStateManager.shared.showPreferences()
     }
     
     @objc private func quitApp() {

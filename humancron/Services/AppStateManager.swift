@@ -11,6 +11,7 @@ class AppStateManager: ObservableObject {
     @Published var currentStep: Int = 0
     
     private var window: NSWindow?
+    private var preferencesWindow: NSWindow?
     private var cancellables = Set<AnyCancellable>()
     
     private init() {
@@ -178,6 +179,35 @@ class AppStateManager: ObservableObject {
             object: self,
             userInfo: userInfo
         )
+    }
+    
+    // MARK: - Preferences Window
+    
+    func showPreferences() {
+        if preferencesWindow == nil {
+            let settingsView = SettingsView()
+            let hostingController = NSHostingController(rootView: settingsView)
+            
+            let window = NSWindow(
+                contentRect: NSRect(x: 0, y: 0, width: 600, height: 400),
+                styleMask: [.titled, .closable, .miniaturizable],
+                backing: .buffered,
+                defer: false
+            )
+            window.title = "Preferences"
+            window.contentViewController = hostingController
+            window.center()
+            window.isReleasedWhenClosed = false
+            
+            preferencesWindow = window
+        }
+        
+        preferencesWindow?.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
+    }
+    
+    func closePreferences() {
+        preferencesWindow?.close()
     }
 }
 

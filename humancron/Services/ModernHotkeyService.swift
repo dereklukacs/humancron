@@ -8,20 +8,40 @@ class ModernHotkeyService: ObservableObject {
     @Published var isRegistered = false
     private var hotkeyMonitor: Any?
     
-    private init() {}
+    private init() {
+        setupNotifications()
+    }
+    
+    private func setupNotifications() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(hotkeyChanged),
+            name: .hotkeyChanged,
+            object: nil
+        )
+    }
+    
+    @objc private func hotkeyChanged() {
+        unregisterHotkey()
+        registerHotkey()
+    }
     
     func registerHotkey() {
         guard !isRegistered else { return }
         
-        print("Registering global hotkey: Option+Space")
+        let settings = SettingsService.shared
+        let modifiers = settings.hotkeyModifiers
+        let keyCode = settings.hotkeyKeyCode
         
-        // Monitor for Option+Space globally
+        print("Registering global hotkey: \(settings.globalHotkey)")
+        
+        // Monitor for the configured hotkey globally
         hotkeyMonitor = NSEvent.addGlobalMonitorForEvents(matching: .keyDown) { [weak self] event in
             guard let self = self else { return }
             
-            // Check for Option+Space (keyCode 49 is Space)
-            if event.modifierFlags.contains(.option) && event.keyCode == 49 {
-                print("Global hotkey detected: Option+Space")
+            // Check if the event matches our hotkey
+            if event.modifierFlags.intersection([.command, .option, .control, .shift]) == modifiers && event.keyCode == keyCode {
+                print("Global hotkey detected: \(settings.globalHotkey)")
                 DispatchQueue.main.async {
                     self.handleHotKeyPress()
                 }
@@ -32,9 +52,9 @@ class ModernHotkeyService: ObservableObject {
         NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
             guard let self = self else { return event }
             
-            // Check for Option+Space
-            if event.modifierFlags.contains(.option) && event.keyCode == 49 {
-                print("Local hotkey detected: Option+Space")
+            // Check if the event matches our hotkey
+            if event.modifierFlags.intersection([.command, .option, .control, .shift]) == modifiers && event.keyCode == keyCode {
+                print("Local hotkey detected: \(settings.globalHotkey)")
                 DispatchQueue.main.async {
                     self.handleHotKeyPress()
                 }

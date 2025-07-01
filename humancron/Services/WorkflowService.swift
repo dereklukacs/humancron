@@ -11,13 +11,21 @@ class WorkflowService: ObservableObject {
     @Published var error: Error?
     
     private var fileWatcher: DispatchSourceFileSystemObject?
-    private let workflowsDirectory: URL
+    private var workflowsDirectory: URL
     
     private init() {
-        // Set up default workflows directory
-        let documentsPath = FileManager.default.urls(for: .documentDirectory, 
-                                                    in: .userDomainMask).first!
-        self.workflowsDirectory = documentsPath.appendingPathComponent(".humancron/workflows")
+        // Set up workflows directory based on settings
+        let settings = SettingsService.shared
+        let directoryPath = settings.effectiveWorkflowsDirectory
+        self.workflowsDirectory = URL(fileURLWithPath: directoryPath)
+        
+        // Set up notifications
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(workflowsDirectoryChanged),
+            name: .workflowsDirectoryChanged,
+            object: nil
+        )
         
         // Defer initialization to avoid blocking
         Task { @MainActor in
@@ -198,6 +206,26 @@ class WorkflowService: ObservableObject {
         } catch {
             self.error = error
         }
+    }
+    
+    @objc private func workflowsDirectoryChanged() {
+        // Stop existing file watcher
+        fileWatcher?.cancel()
+        fileWatcher = nil
+        
+        // Update directory path
+        let settings = SettingsService.shared
+        let directoryPath = settings.effectiveWorkflowsDirectory
+        self.workflowsDirectory = URL(fileURLWithPath: directoryPath)
+        
+        // Create directory if needed
+        createWorkflowsDirectory()
+        
+        // Reload workflows
+        loadWorkflows()
+        
+        // Set up new file watcher
+        setupFileWatcher()
     }
     
     deinit {
