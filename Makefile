@@ -33,6 +33,15 @@ test-all: test-design-system test
 xcode:
 	open humancron.xcodeproj
 
+close:
+	killall humancron
+
 # Open the built app
 open:
 	open /Users/obsess/Library/Developer/Xcode/DerivedData/humancron-*/Build/Products/Debug/humancron.app
+
+
+install:
+	cp -r /Users/obsess/Library/Developer/Xcode/DerivedData/humancron-*/Build/Products/Debug/humancron.app /Applications/humancron.app
+
+bo: build close open
