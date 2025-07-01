@@ -93,7 +93,7 @@ struct WorkflowSelectorView: View {
                                 isSelected: index == selectedIndex,
                                 isHovered: index == hoveredIndex,
                                 lastRun: historyService.getLastRun(for: workflow.id),
-                                shortcutNumber: index < 9 ? index + 1 : nil
+                                shortcutNumber: nil
                             )
                             .onTapGesture {
                                 selectedIndex = index
@@ -110,9 +110,6 @@ struct WorkflowSelectorView: View {
             // Help text
             HStack {
                 Text("Press")
-                    .foregroundColor(Token.Color.onSurface.opacity(0.7))
-                ShortcutHint("1-9")
-                Text("or")
                     .foregroundColor(Token.Color.onSurface.opacity(0.7))
                 ShortcutHint("↵")
                 Text("to select •")
@@ -188,16 +185,6 @@ struct WorkflowSelectorView: View {
                     appState.hideApp()
                     return nil // Consume the event
                     
-                case 18...26: // Number keys 1-9
-                    // Only handle number keys if text field is not focused
-                    if !isTextFieldFocused {
-                        let number = Int(event.keyCode - 17) // Convert keyCode to number (1-9)
-                        if number <= filteredWorkflows.count {
-                            selectedIndex = number - 1
-                            selectWorkflow()
-                        }
-                        return nil // Consume the event
-                    }
                     
                 default:
                     break // Let the event pass through
@@ -231,22 +218,6 @@ struct WorkflowRow: View {
     
     var body: some View {
         HStack {
-            // Shortcut number indicator
-            if let number = shortcutNumber {
-                Text("\(number)")
-                    .font(.system(size: 14, weight: .medium, design: .monospaced))
-                    .foregroundColor(isSelected ? Token.Color.brand : Token.Color.onSurface.opacity(0.5))
-                    .frame(width: 24, height: 24)
-                    .background(
-                        Circle()
-                            .fill(isSelected ? Token.Color.brand.opacity(0.2) : Token.Color.surface.opacity(0.8))
-                    )
-                    .overlay(
-                        Circle()
-                            .stroke(isSelected ? Token.Color.brand : Token.Color.onSurface.opacity(0.2), lineWidth: 1)
-                    )
-            }
-            
             VStack(alignment: .leading, spacing: Token.Spacing.x1) {
                 Text(workflow.name)
                     .font(.system(size: 15, weight: .medium))
