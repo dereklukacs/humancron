@@ -130,11 +130,11 @@ class AppStateManager: ObservableObject {
         NSApp.activate(ignoringOtherApps: true)
     }
     
-    func hideApp(force: Bool = false) {
+    func hideApp(force: Bool = false, restoreFocus: Bool = true) {
         // Don't hide if pinned, unless forced
         if isPinned && !force {
             // Just restore focus to previous app without hiding the window
-            if let previousApp = previousApp {
+            if restoreFocus, let previousApp = previousApp {
                 print("Restoring focus to: \(previousApp.localizedName ?? "Unknown")")
                 previousApp.activate()
             }
@@ -148,8 +148,8 @@ class AppStateManager: ObservableObject {
         // Hide window
         window?.orderOut(nil)
         
-        // Restore focus to the previous application
-        if let previousApp = previousApp {
+        // Restore focus to the previous application only if requested
+        if restoreFocus, let previousApp = previousApp {
             print("Restoring focus to: \(previousApp.localizedName ?? "Unknown")")
             previousApp.activate()
         }

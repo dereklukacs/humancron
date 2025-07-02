@@ -139,7 +139,7 @@ struct WorkflowExecutionView: View {
                     openLink(link)
                     appState.markLinkAsOpened(forStep: appState.currentStep)
                     // Hide the app so user can interact with the opened link
-                    appState.hideApp()
+                    appState.hideApp(restoreFocus: false)
                 }
                 return nil
             case 53: // Escape
@@ -229,7 +229,7 @@ struct ChecklistStepRow: View {
                             // Open link when clicking the icon
                             LinkOpenerService.shared.openLink(link)
                             appState.markLinkAsOpened(forStep: stepIndex)
-                            appState.hideApp()
+                            appState.hideApp(restoreFocus: false)
                         }) {
                             HStack(spacing: Token.Spacing.x1) {
                                 // Favicon if available
