@@ -109,6 +109,12 @@ struct WorkflowExecutionView: View {
                 return nil // Consume the event
             }
             
+            // Check for Cmd+, to open preferences
+            if event.modifierFlags.contains(.command) && event.keyCode == 43 { // Comma key
+                appState.showPreferences()
+                return nil // Consume the event
+            }
+            
             // Check for command key combinations
             if event.modifierFlags.contains(.command) {
                 switch event.keyCode {

@@ -144,6 +144,12 @@ struct WorkflowSelectorView: View {
                 return nil // Consume the event
             }
             
+            // Check for Cmd+, to open preferences
+            if event.modifierFlags.contains(.command) && event.keyCode == 43 { // Comma key
+                appState.showPreferences()
+                return nil // Consume the event
+            }
+            
             // Check if we're typing in the search field (no modifiers except shift)
             let hasModifiers = event.modifierFlags.contains(.command) || 
                              event.modifierFlags.contains(.control) || 
