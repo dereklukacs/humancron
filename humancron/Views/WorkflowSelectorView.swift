@@ -138,6 +138,12 @@ struct WorkflowSelectorView: View {
             let firstResponder = NSApp.keyWindow?.firstResponder
             let isTextFieldFocused = firstResponder is NSTextView
             
+            // Check for Shift+P to toggle pinning
+            if event.modifierFlags.contains(.shift) && event.keyCode == 35 { // P key
+                appState.isPinned.toggle()
+                return nil // Consume the event
+            }
+            
             // Check if we're typing in the search field (no modifiers except shift)
             let hasModifiers = event.modifierFlags.contains(.command) || 
                              event.modifierFlags.contains(.control) || 
@@ -183,11 +189,11 @@ struct WorkflowSelectorView: View {
                     
                     
                 default:
-                    break // Let the event pass through
+                    return nil // Consume all other events
                 }
             }
             
-            return event // Let the event pass through for typing
+            return nil // Consume all events by default
         }
     }
     

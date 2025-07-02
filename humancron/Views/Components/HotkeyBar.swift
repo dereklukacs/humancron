@@ -26,12 +26,6 @@ struct HotkeyBar: View {
         .padding(.vertical, Token.Spacing.x2)
         .frame(maxWidth: .infinity)
         .background(Token.Color.surface.opacity(0.9))
-        .overlay(
-            Rectangle()
-                .frame(height: 1)
-                .foregroundColor(Token.Color.onSurface.opacity(0.1)),
-            alignment: .top
-        )
     }
 }
 

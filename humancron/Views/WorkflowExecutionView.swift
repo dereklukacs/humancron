@@ -103,6 +103,12 @@ struct WorkflowExecutionView: View {
         
         // Add new monitor
         eventMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
+            // Check for Shift+P to toggle pinning
+            if event.modifierFlags.contains(.shift) && event.keyCode == 35 { // P key
+                appState.isPinned.toggle()
+                return nil // Consume the event
+            }
+            
             // Check for command key combinations
             if event.modifierFlags.contains(.command) {
                 switch event.keyCode {
@@ -155,10 +161,10 @@ struct WorkflowExecutionView: View {
                 appState.backToWorkflowList()
                 return nil
             default:
-                break
+                return nil // Consume all other events
             }
             
-            return event
+            return nil // Consume all events by default
         }
     }
     
