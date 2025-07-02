@@ -24,9 +24,12 @@ class AppStateManager: ObservableObject {
     private var onboardingWindow: NSWindow?
     private var cancellables = Set<AnyCancellable>()
     private var previousApp: NSRunningApplication?
+    private var lastWindowPosition: CGPoint?
+    private var windowDelegate: WindowDelegate?
     
     private init() {
         setupNotifications()
+        loadWindowPosition()
     }
     
     private func setupNotifications() {
@@ -40,6 +43,10 @@ class AppStateManager: ObservableObject {
     func setup(window: NSWindow?) {
         self.window = window
         configureWindow()
+        
+        // Set up window delegate to track movement
+        windowDelegate = WindowDelegate(appState: self)
+        window?.delegate = windowDelegate
         
         // Initially hide the window after a short delay to ensure it's fully initialized
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
@@ -70,6 +77,14 @@ class AppStateManager: ObservableObject {
     private func centerWindow() {
         guard let window = window else { return }
         
+        // First check if we have a saved position
+        if let savedPosition = lastWindowPosition {
+            let windowSize = CGSize(width: 600, height: 400)
+            window.setFrame(NSRect(origin: savedPosition, size: windowSize), display: true)
+            return
+        }
+        
+        // Otherwise center on main screen
         if let screen = NSScreen.main {
             let screenFrame = screen.frame
             let windowSize = CGSize(width: 600, height: 400)
@@ -77,6 +92,45 @@ class AppStateManager: ObservableObject {
             let y = screenFrame.origin.y + (screenFrame.height - windowSize.height) / 2
             window.setFrame(NSRect(origin: CGPoint(x: x, y: y), size: windowSize), display: true)
         }
+    }
+    
+    func saveWindowPosition() {
+        guard let window = window else { return }
+        let position = window.frame.origin
+        lastWindowPosition = position
+        UserDefaults.standard.set(position.x, forKey: "HumanCronWindowX")
+        UserDefaults.standard.set(position.y, forKey: "HumanCronWindowY")
+    }
+    
+    private func loadWindowPosition() {
+        let x = UserDefaults.standard.double(forKey: "HumanCronWindowX")
+        let y = UserDefaults.standard.double(forKey: "HumanCronWindowY")
+        
+        // Only use saved position if it's not the default (0,0)
+        if x != 0 || y != 0 {
+            lastWindowPosition = CGPoint(x: x, y: y)
+        }
+    }
+    
+    private func positionWindowOnActiveScreen() {
+        guard let window = window else { return }
+        
+        // Get the screen with the mouse cursor
+        let mouseLocation = NSEvent.mouseLocation
+        let screen = NSScreen.screens.first { screen in
+            NSMouseInRect(mouseLocation, screen.frame, false)
+        } ?? NSScreen.main ?? NSScreen.screens.first
+        
+        guard let activeScreen = screen else { return }
+        
+        let screenFrame = activeScreen.frame
+        let windowSize = CGSize(width: 600, height: 400)
+        
+        // Center on the active screen
+        let x = screenFrame.origin.x + (screenFrame.width - windowSize.width) / 2
+        let y = screenFrame.origin.y + (screenFrame.height - windowSize.height) / 2
+        
+        window.setFrame(NSRect(origin: CGPoint(x: x, y: y), size: windowSize), display: true)
     }
     
     func toggleApp() {
@@ -118,8 +172,27 @@ class AppStateManager: ObservableObject {
         
         print("Showing app window")
         
-        // Center window before showing
-        centerWindow()
+        // If we have a saved position, use it; otherwise position on active screen
+        if let savedPosition = lastWindowPosition {
+            // Ensure the saved position is still visible on some screen
+            let windowSize = CGSize(width: 600, height: 400)
+            let windowFrame = NSRect(origin: savedPosition, size: windowSize)
+            
+            let isVisible = NSScreen.screens.contains { screen in
+                screen.frame.intersects(windowFrame)
+            }
+            
+            if isVisible {
+                // Use saved position
+                window.setFrame(windowFrame, display: true)
+            } else {
+                // Saved position is off-screen, position on active screen
+                positionWindowOnActiveScreen()
+            }
+        } else {
+            // No saved position, position on active screen
+            positionWindowOnActiveScreen()
+        }
         
         withAnimation(.easeOut(duration: Token.Motion.fast)) {
             isActive = true
@@ -131,6 +204,9 @@ class AppStateManager: ObservableObject {
     }
     
     func hideApp(force: Bool = false, restoreFocus: Bool = true) {
+        // Save window position before hiding
+        saveWindowPosition()
+        
         // Don't hide if pinned, unless forced
         if isPinned && !force {
             // Just restore focus to previous app without hiding the window
@@ -395,3 +471,18 @@ class AppStateManager: ObservableObject {
 
 // Workflow models (moved to separate file)
 // See Models/Workflow.swift
+
+// Window delegate to track window movement
+class WindowDelegate: NSObject, NSWindowDelegate {
+    weak var appState: AppStateManager?
+    
+    init(appState: AppStateManager) {
+        self.appState = appState
+        super.init()
+    }
+    
+    func windowDidMove(_ notification: Notification) {
+        // Save position whenever window moves
+        appState?.saveWindowPosition()
+    }
+}
