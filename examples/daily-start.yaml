@@ -1,0 +1,35 @@
+name: Daily Start
+description: Morning routine to clear inboxes and set intentions for the day
+steps:
+  - name: Calendar skim
+    description: Review today's meetings and time blocks
+    link: cron://
+
+  - name: Email zero - Personal
+    description: Process personal email inbox to zero
+    link: superhuman://
+
+  - name: Email zero - Gauntlet
+    description: Process work email inbox to zero
+    link: https://mail.google.com/mail/u/1/
+  
+  - name: Slack zero
+    description: Catch up on important Slack messages and threads
+    link: slack://
+  
+  - name: Engage in a Twitter conversation
+    description: Find and contribute to one meaningful discussion
+    link: https://x.com/home
+  
+  - name: Spot check Hacker News
+    description: Scan top stories for relevant tech news
+    link: https://news.ycombinator.com/
+  
+  - name: Write down goals for the day
+    description: Document top 3-5 priorities in your task manager
+    link: notion://
+  
+  - name: Find 1 new prompt tip to try
+    description: Discover and note one new AI prompting technique
+    link: https://github.com/f/awesome-chatgpt-prompts
+  

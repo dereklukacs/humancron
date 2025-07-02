@@ -1,0 +1,22 @@
+name: Daily End
+description: Evening routine to close loops and prepare for tomorrow
+steps:
+  - name: Email zero - Personal
+    description: Final check and clear personal inbox before end of day
+    link: superhuman://
+    
+
+  - name: Email zero - Gauntlet
+    description: Final check and clear work inbox, flag items for tomorrow
+    link: superhuman://
+    
+
+  - name: Slack zero
+    description: Final check of Slack, set status for tomorrow if needed
+    link: slack://
+    
+
+  - name: Review what I did today and write down what is left
+    description: Reflect on accomplishments and capture open items for tomorrow
+    link: obsidian://
+    
