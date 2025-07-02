@@ -28,6 +28,7 @@ struct ContentView: View {
         }
         .frame(width: appState.isActive ? 600 : 1, height: appState.isActive ? 400 : 1)
         .background(Color.clear)
+        .clipShape(RoundedRectangle(cornerRadius: Token.Radius.lg))
         .onAppear {
             // Debug: Show notification when hotkey is pressed
             NotificationCenter.default.addObserver(
@@ -75,7 +76,7 @@ struct MainOverlayView: View {
                     items.append(HotkeyItem("␣", "Open Link", action: {
                         LinkOpenerService.shared.openLink(link)
                         appState.markLinkAsOpened(forStep: appState.currentStep)
-                        appState.hideApp()
+                        appState.hideApp(restoreFocus: false)
                     }))
                 } else {
                     // Show disabled spacebar when no link
@@ -153,8 +154,7 @@ struct MainOverlayView: View {
                 HotkeyBar(items: hotkeyItems)
             }
         }
-        .clipped()
-        .cornerRadius(Token.Radius.lg)
+        .clipShape(RoundedRectangle(cornerRadius: Token.Radius.lg))
         .shadow(radius: 20)
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.didResignActiveNotification)) { _ in
             // Hide when app loses focus only if not pinned
@@ -174,11 +174,13 @@ struct VisualEffectBackground: NSViewRepresentable {
         view.state = .active
         view.wantsLayer = true
         view.layer?.masksToBounds = true
+        view.layer?.cornerRadius = 16 // Match Token.Radius.lg
         return view
     }
     
     func updateNSView(_ nsView: NSVisualEffectView, context: Context) {
         nsView.layer?.masksToBounds = true
+        nsView.layer?.cornerRadius = 16 // Match Token.Radius.lg
     }
 }
 
