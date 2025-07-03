@@ -24,8 +24,8 @@ public struct Typography {
         
         var weight: Font.Weight {
             switch self {
-            case .displayLarge, .displaySmall: return .bold
-            case .title, .headline: return .semibold
+            case .displayLarge, .displaySmall: return .regular
+            case .title, .headline: return .regular
             case .body, .bodySmall, .caption: return .regular
             }
         }
