@@ -43,7 +43,6 @@ struct WorkflowStep: Identifiable, Codable {
     let command: String?
     let duration: TimeInterval?
     let automations: [WorkflowAutomation]?
-    let isFinishStep: Bool
     
     enum CodingKeys: String, CodingKey {
         case name
@@ -52,28 +51,16 @@ struct WorkflowStep: Identifiable, Codable {
         case command
         case duration
         case automations
-        case isFinishStep
     }
     
     init(name: String, description: String, link: String? = nil, command: String? = nil, 
-         duration: TimeInterval? = nil, automations: [WorkflowAutomation]? = nil, 
-         isFinishStep: Bool = false) {
+         duration: TimeInterval? = nil, automations: [WorkflowAutomation]? = nil) {
         self.name = name
         self.description = description
         self.link = link
         self.command = command
         self.duration = duration
         self.automations = automations
-        self.isFinishStep = isFinishStep
-    }
-    
-    // Factory method to create the finish step
-    static func createFinishStep() -> WorkflowStep {
-        return WorkflowStep(
-            name: "Finish Workflow",
-            description: "All tasks completed",
-            isFinishStep: true
-        )
     }
 }
 
@@ -120,7 +107,6 @@ extension WorkflowStep {
         self.description = description
         self.link = dict["link"] as? String
         self.command = dict["command"] as? String
-        self.isFinishStep = dict["isFinishStep"] as? Bool ?? false
         
         // Parse duration (in seconds from YAML)
         if let durationSeconds = dict["duration"] as? Double {

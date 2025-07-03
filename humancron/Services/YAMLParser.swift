@@ -170,22 +170,8 @@ class YAMLParser {
         let yamlString = try String(contentsOf: fileURL, encoding: .utf8)
         var workflow = try parseWorkflow(from: yamlString)
         workflow.filePath = fileURL.path
-        
-        // Append the finish step to all workflows
-        var modifiedSteps = workflow.steps
-        modifiedSteps.append(WorkflowStep.createFinishStep())
-        
-        // Create a new workflow with the modified steps
-        let modifiedWorkflow = Workflow(
-            name: workflow.name,
-            description: workflow.description,
-            hotkey: workflow.hotkey,
-            steps: modifiedSteps,
-            filePath: workflow.filePath
-        )
-        
-        try validateWorkflow(workflow) // Validate original workflow (without finish step)
-        return modifiedWorkflow
+        try validateWorkflow(workflow)
+        return workflow
     }
 }
 

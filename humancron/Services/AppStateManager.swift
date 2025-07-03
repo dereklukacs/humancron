@@ -290,27 +290,7 @@ class AppStateManager: ObservableObject {
         guard let workflow = currentWorkflow,
               currentStep < workflow.steps.count else { return }
         
-        let step = workflow.steps[currentStep]
-        
-        // Handle finish step
-        if step.isFinishStep {
-            // Only allow completing finish step if all other steps are completed
-            let nonFinishSteps = workflow.steps.filter { !$0.isFinishStep }
-            let nonFinishStepIndices = workflow.steps.enumerated()
-                .compactMap { $0.element.isFinishStep ? nil : $0.offset }
-            let completedNonFinishSteps = nonFinishStepIndices.filter { completedSteps.contains($0) }
-            
-            if completedNonFinishSteps.count == nonFinishSteps.count {
-                // All non-finish steps are completed, complete the workflow
-                completeWorkflow()
-                return
-            } else {
-                // Don't allow toggling the finish step if not all tasks are completed
-                return
-            }
-        }
-        
-        // Regular step toggle
+        // Toggle step completion
         if completedSteps.contains(currentStep) {
             completedSteps.remove(currentStep)
         } else {
