@@ -172,9 +172,9 @@ struct MainOverlayView: View {
                 }
             }
         )
-        .onReceive(NotificationCenter.default.publisher(for: NSApplication.didResignActiveNotification)) { _ in
-            // Hide when app loses focus only if not pinned
-            if appState.isActive && appState.currentWorkflow == nil && !appState.isPinned {
+        .onReceive(NotificationCenter.default.publisher(for: .windowLostFocus)) { _ in
+            // Hide when window loses focus only if not pinned
+            if appState.isActive && !appState.isPinned {
                 appState.hideApp()
             }
         }

@@ -17,4 +17,21 @@ class BorderlessWindow: NSWindow {
         self.isMovableByWindowBackground = true
         self.isMovable = true
     }
+    
+    override func resignKey() {
+        super.resignKey()
+        // Post notification when window loses key status
+        NotificationCenter.default.post(name: .windowLostFocus, object: self)
+    }
+    
+    override func resignMain() {
+        super.resignMain()
+        // Post notification when window loses main status
+        NotificationCenter.default.post(name: .windowLostFocus, object: self)
+    }
+}
+
+// Custom notification for window focus loss
+extension Notification.Name {
+    static let windowLostFocus = Notification.Name("windowLostFocus")
 }
