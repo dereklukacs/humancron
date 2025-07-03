@@ -14,6 +14,8 @@ class SettingsService: ObservableObject {
     @AppStorage("windowSize") var windowSize: String = ""
     @AppStorage("hasCompletedOnboarding") var hasCompletedOnboarding: Bool = false
     @AppStorage("hasCreatedSampleWorkflows") var hasCreatedSampleWorkflows: Bool = false
+    @AppStorage("windowWidth") var windowWidth: Double = 600
+    @AppStorage("windowHeight") var windowHeight: Double = 400
     
     // Hotkey components
     @Published var hotkeyModifiers: NSEvent.ModifierFlags = .option

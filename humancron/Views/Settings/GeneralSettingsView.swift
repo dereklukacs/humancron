@@ -44,6 +44,60 @@ struct GeneralSettingsView: View {
                 Divider()
                     .padding(.vertical, Token.Spacing.x2)
                 
+                // Window Size Section
+                VStack(alignment: .leading, spacing: Token.Spacing.x3) {
+                    Text("Window Size")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundColor(Token.Color.onSurface)
+                    
+                    HStack {
+                        Text("Width")
+                            .font(.system(size: 13))
+                            .foregroundColor(Token.Color.onSurface)
+                            .frame(width: 60, alignment: .leading)
+                        
+                        Slider(value: $settings.windowWidth, in: 400...1200, step: 50)
+                            .controlSize(.small)
+                        
+                        Text("\(Int(settings.windowWidth))")
+                            .font(.system(size: 12, design: .monospaced))
+                            .foregroundColor(Token.Color.onSurface.opacity(0.7))
+                            .frame(width: 50, alignment: .trailing)
+                    }
+                    
+                    HStack {
+                        Text("Height")
+                            .font(.system(size: 13))
+                            .foregroundColor(Token.Color.onSurface)
+                            .frame(width: 60, alignment: .leading)
+                        
+                        Slider(value: $settings.windowHeight, in: 300...900, step: 50)
+                            .controlSize(.small)
+                        
+                        Text("\(Int(settings.windowHeight))")
+                            .font(.system(size: 12, design: .monospaced))
+                            .foregroundColor(Token.Color.onSurface.opacity(0.7))
+                            .frame(width: 50, alignment: .trailing)
+                    }
+                    
+                    HStack {
+                        Button("Reset to Default") {
+                            settings.windowWidth = 600
+                            settings.windowHeight = 400
+                        }
+                        .buttonStyle(SecondaryButtonStyle())
+                        
+                        Spacer()
+                        
+                        Text("Changes apply next time window opens")
+                            .font(.system(size: 11))
+                            .foregroundColor(Token.Color.onSurface.opacity(0.5))
+                    }
+                }
+                
+                Divider()
+                    .padding(.vertical, Token.Spacing.x2)
+                
                 // About Section
                 VStack(alignment: .leading, spacing: Token.Spacing.x3) {
                     Text("About")

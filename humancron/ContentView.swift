@@ -10,6 +10,7 @@ import DesignSystem
 
 struct ContentView: View {
     @EnvironmentObject var appState: AppStateManager
+    @StateObject private var settings = SettingsService.shared
     
     var body: some View {
         Group {
@@ -26,7 +27,7 @@ struct ContentView: View {
                     .frame(width: 1, height: 1)
             }
         }
-        .frame(width: appState.isActive ? 600 : 1, height: appState.isActive ? 400 : 1)
+        .frame(width: appState.isActive ? settings.windowWidth : 1, height: appState.isActive ? settings.windowHeight : 1)
         .background(Color.clear)
         .clipShape(RoundedRectangle(cornerRadius: Token.Radius.lg))
         .onAppear {
@@ -155,9 +156,22 @@ struct MainOverlayView: View {
                 // Hotkey bar at bottom
                 HotkeyBar(items: hotkeyItems)
             }
+            
         }
         .clipShape(RoundedRectangle(cornerRadius: Token.Radius.lg))
         .shadow(radius: 20)
+        .overlay(
+            // Resize handle in bottom right corner - outside the clipped area
+            VStack {
+                Spacer()
+                HStack {
+                    Spacer()
+                    ResizeHandle()
+                        .frame(width: 20, height: 20)
+                        .offset(x: -8, y: -8)
+                }
+            }
+        )
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.didResignActiveNotification)) { _ in
             // Hide when app loses focus only if not pinned
             if appState.isActive && appState.currentWorkflow == nil && !appState.isPinned {
@@ -208,6 +222,124 @@ class DraggableView: NSView {
         if let window = self.window {
             window.performDrag(with: event)
         }
+    }
+    
+    override func acceptsFirstMouse(for event: NSEvent?) -> Bool {
+        return true
+    }
+}
+
+// Resize handle view
+struct ResizeHandle: View {
+    @State private var isHovered = false
+    
+    var body: some View {
+        ZStack {
+            // Background for better visibility
+            RoundedRectangle(cornerRadius: 4)
+                .fill(Token.Color.surface.opacity(isHovered ? 0.8 : 0.5))
+            
+            // Visual indicator - diagonal lines
+            Path { path in
+                // First line
+                path.move(to: CGPoint(x: 6, y: 14))
+                path.addLine(to: CGPoint(x: 14, y: 6))
+                
+                // Second line
+                path.move(to: CGPoint(x: 10, y: 14))
+                path.addLine(to: CGPoint(x: 14, y: 10))
+                
+                // Third line
+                path.move(to: CGPoint(x: 14, y: 14))
+                path.addLine(to: CGPoint(x: 14, y: 14))
+            }
+            .stroke(Token.Color.onSurface.opacity(isHovered ? 0.6 : 0.4), lineWidth: 1.5)
+        }
+        .overlay(ResizableView())
+        .onHover { hovering in
+            isHovered = hovering
+        }
+    }
+}
+
+// Window resize view
+struct ResizableView: NSViewRepresentable {
+    func makeNSView(context: Context) -> NSView {
+        return ResizeView()
+    }
+    
+    func updateNSView(_ nsView: NSView, context: Context) {
+        // No updates needed
+    }
+}
+
+// Custom NSView that handles window resizing
+class ResizeView: NSView {
+    private var initialMouseLocation: NSPoint?
+    private var initialFrame: NSRect?
+    
+    override init(frame frameRect: NSRect) {
+        super.init(frame: frameRect)
+        self.wantsLayer = true
+    }
+    
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        self.wantsLayer = true
+    }
+    
+    override func mouseDown(with event: NSEvent) {
+        if let window = self.window {
+            // Convert to screen coordinates
+            let mouseLocation = window.convertPoint(toScreen: event.locationInWindow)
+            initialMouseLocation = mouseLocation
+            initialFrame = window.frame
+        }
+    }
+    
+    override func mouseDragged(with event: NSEvent) {
+        guard let window = self.window,
+              let initialMouseLocation = initialMouseLocation,
+              let initialFrame = initialFrame else { return }
+        
+        // Convert current mouse location to screen coordinates
+        let currentMouseLocation = window.convertPoint(toScreen: event.locationInWindow)
+        
+        // Calculate deltas
+        let deltaX = currentMouseLocation.x - initialMouseLocation.x
+        let deltaY = -(currentMouseLocation.y - initialMouseLocation.y) // Invert Y for natural dragging
+        
+        // Calculate new size
+        var newFrame = initialFrame
+        newFrame.size.width = max(400, initialFrame.width + deltaX)
+        newFrame.size.height = max(300, initialFrame.height + deltaY)
+        
+        // Keep the top-left corner in place
+        newFrame.origin.y = initialFrame.origin.y + initialFrame.height - newFrame.height
+        
+        // Update window frame
+        window.setFrame(newFrame, display: true, animate: false)
+        
+        // Update settings
+        DispatchQueue.main.async {
+            let settings = SettingsService.shared
+            settings.windowWidth = newFrame.width
+            settings.windowHeight = newFrame.height
+        }
+    }
+    
+    override func mouseUp(with event: NSEvent) {
+        initialMouseLocation = nil
+        initialFrame = nil
+    }
+    
+    override func resetCursorRects() {
+        // Use the diagonal resize cursor
+        self.addCursorRect(self.bounds, cursor: .crosshair)
+    }
+    
+    override var acceptsFirstResponder: Bool {
+        return true
     }
     
     override func acceptsFirstMouse(for event: NSEvent?) -> Bool {

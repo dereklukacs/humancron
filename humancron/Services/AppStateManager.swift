@@ -125,7 +125,8 @@ class AppStateManager: ObservableObject {
         guard let activeScreen = screen else { return }
         
         let screenFrame = activeScreen.frame
-        let windowSize = CGSize(width: 600, height: 400)
+        let settings = SettingsService.shared
+        let windowSize = CGSize(width: settings.windowWidth, height: settings.windowHeight)
         
         // Center on the active screen
         let x = screenFrame.origin.x + (screenFrame.width - windowSize.width) / 2
