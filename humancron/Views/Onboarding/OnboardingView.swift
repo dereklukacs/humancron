@@ -4,63 +4,79 @@ import DesignSystem
 struct OnboardingView: View {
     @StateObject private var settings = SettingsService.shared
     @State private var currentStep = 0
+    @State private var hasAccessibilityPermission = false
     @Environment(\.dismiss) private var dismiss
+    
+    let timer = Timer.publish(every: 0.5, on: .main, in: .common).autoconnect()
     
     var body: some View {
         ZStack {
             // Background with blur effect to match main app
-            VisualEffectBackground()
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            Color.clear
+                .background(VisualEffectBackground())
+                .ignoresSafeArea()
             
             VStack(spacing: 0) {
-                // Drag handle area at the top to match main app
-                ZStack {
-                    Rectangle()
-                        .fill(Color.clear)
-                        .frame(height: 40)
-                        .background(WindowDragView())
+                // Custom title bar
+                HStack {
+                    Text("Welcome to HumanCron")
+                        .textStyle(.headline)
+                        .foregroundColor(Token.Color.onSurface)
                     
-                    HStack {
-                        Text("Welcome to HumanCron")
-                            .textStyle(.headline)
-                            .foregroundColor(Token.Color.onSurface)
-                            .padding(.leading, Token.Spacing.x4)
-                        
-                        Spacer()
-                        
-                        // Close button
-                        Button(action: {
-                            dismiss()
-                        }) {
-                            Image(systemName: "xmark.circle.fill")
-                                .font(.system(size: 16))
-                                .foregroundColor(Token.Color.onSurface.opacity(0.6))
-                        }
-                        .buttonStyle(.plain)
-                        .padding(.trailing, Token.Spacing.x3)
+                    Spacer()
+                    
+                    // Close button
+                    Button(action: {
+                        AppStateManager.shared.closeOnboarding()
+                    }) {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.system(size: 16))
+                            .foregroundColor(Token.Color.onSurface.opacity(0.6))
                     }
+                    .buttonStyle(.plain)
                 }
+                .padding(.horizontal, Token.Spacing.x4)
+                .padding(.vertical, Token.Spacing.x3)
+                .background(WindowDragView())
                 
                 // Progress indicator
                 ProgressBar(currentStep: currentStep, totalSteps: 4)
                     .padding(.horizontal, Token.Spacing.x4)
-                    .padding(.top, Token.Spacing.x2)
+                    .padding(.top, Token.Spacing.x1)
                 
                 // Content
-                TabView(selection: $currentStep) {
-                    WelcomeStep()
-                        .tag(0)
-                    
-                    PermissionsStep()
-                        .tag(1)
-                    
-                    WorkflowSetupStep()
-                        .tag(2)
-                    
-                    CompletionStep()
-                        .tag(3)
+                Group {
+                    switch currentStep {
+                    case 0:
+                        WelcomeStep()
+                            .transition(.asymmetric(
+                                insertion: .move(edge: .trailing),
+                                removal: .move(edge: .leading)
+                            ))
+                    case 1:
+                        PermissionsStep(hasAccessibilityPermission: $hasAccessibilityPermission)
+                            .transition(.asymmetric(
+                                insertion: .move(edge: .trailing),
+                                removal: .move(edge: .leading)
+                            ))
+                    case 2:
+                        WorkflowSetupStep()
+                            .transition(.asymmetric(
+                                insertion: .move(edge: .trailing),
+                                removal: .move(edge: .leading)
+                            ))
+                    case 3:
+                        CompletionStep()
+                            .transition(.asymmetric(
+                                insertion: .move(edge: .trailing),
+                                removal: .move(edge: .leading)
+                            ))
+                    default:
+                        EmptyView()
+                    }
                 }
-                .tabViewStyle(.automatic)
+                .animation(.easeInOut(duration: 0.3), value: currentStep)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
                 
                 // Navigation buttons
                 HStack {
@@ -86,17 +102,20 @@ struct OnboardingView: View {
                         }
                     }
                 }
-                .padding(Token.Spacing.x4)
+                .padding(.horizontal, Token.Spacing.x4)
+                .padding(.bottom, Token.Spacing.x3)
             }
         }
-        .frame(width: 600, height: 500)
-        .clipShape(RoundedRectangle(cornerRadius: Token.Radius.lg))
-        .shadow(radius: 20)
+        .frame(width: 700, height: 540)
+        .background(Color.clear)
+        .onReceive(timer) { _ in
+            hasAccessibilityPermission = AXIsProcessTrusted()
+        }
     }
     
     private func completeOnboarding() {
         settings.hasCompletedOnboarding = true
-        dismiss()
+        AppStateManager.shared.closeOnboarding()
         
         // Show the app after onboarding
         AppStateManager.shared.showApp()
@@ -120,44 +139,49 @@ struct ProgressBar: View {
 
 struct WelcomeStep: View {
     var body: some View {
-        VStack(spacing: Token.Spacing.x4) {
-            Spacer()
-            
-            Image(systemName: "clock.badge.checkmark")
-                .font(.system(size: 80))
-                .foregroundColor(Token.Color.brand)
-            
-            Text("Welcome to HumanCron")
-                .textStyle(.displayLarge)
-            
-            Text("Your personal workflow assistant")
-                .textStyle(.title)
-                .foregroundColor(Token.Color.onSurface.opacity(0.7))
-            
-            VStack(alignment: .leading, spacing: Token.Spacing.x3) {
-                FeatureRow(
-                    icon: "keyboard",
-                    title: "Quick Access",
-                    description: "Launch with a global hotkey from anywhere"
-                )
+        GeometryReader { geometry in
+            VStack(spacing: Token.Spacing.x4) {
+                Image(systemName: "clock.badge.checkmark")
+                    .font(.system(size: 60))
+                    .foregroundColor(Token.Color.brand)
                 
-                FeatureRow(
-                    icon: "checklist",
-                    title: "Step-by-Step Workflows",
-                    description: "Execute your routines with guided steps"
-                )
+                VStack(spacing: Token.Spacing.x2) {
+                    Text("Welcome to HumanCron")
+                        .textStyle(.title)
+                        .multilineTextAlignment(.center)
+                    
+                    Text("Your personal workflow assistant")
+                        .textStyle(.body)
+                        .foregroundColor(Token.Color.onSurface.opacity(0.7))
+                        .multilineTextAlignment(.center)
+                }
                 
-                FeatureRow(
-                    icon: "link",
-                    title: "Smart Automation",
-                    description: "Open apps and links automatically"
-                )
+                VStack(spacing: Token.Spacing.x4) {
+                    FeatureRow(
+                        icon: "keyboard",
+                        title: "Quick Access",
+                        description: "Launch with a global hotkey from anywhere"
+                    )
+                    
+                    FeatureRow(
+                        icon: "checklist",
+                        title: "Step-by-Step Workflows",
+                        description: "Execute your routines with guided steps"
+                    )
+                    
+                    FeatureRow(
+                        icon: "link",
+                        title: "Smart Automation",
+                        description: "Open apps and links automatically"
+                    )
+                }
+                .frame(maxWidth: 240)
+                
             }
-            .padding(.top, Token.Spacing.x4)
-            
-            Spacer()
+            .frame(width: geometry.size.width, height: geometry.size.height)
+            .position(x: geometry.size.width / 2, y: geometry.size.height / 2)
         }
-        .padding(Token.Spacing.x4)
+        .padding(.horizontal, Token.Spacing.x6)
     }
 }
 
@@ -169,16 +193,14 @@ struct FeatureRow: View {
     var body: some View {
         HStack(alignment: .top, spacing: Token.Spacing.x3) {
             Image(systemName: icon)
-                .font(.system(size: 24))
+                .font(.system(size: 20))
                 .foregroundColor(Token.Color.brand)
-                .frame(width: 30)
+                .frame(width: 24)
             
-            VStack(alignment: .leading, spacing: Token.Spacing.x1) {
+            VStack(alignment: .leading, spacing: 2) {
                 Text(title)
-                    .textStyle(.headline)
-                Text(description)
-                    .textStyle(.bodySmall)
-                    .foregroundColor(Token.Color.onSurface.opacity(0.7))
+                    .textStyle(.body)
+                    .fontWeight(.medium)
             }
             
             Spacer()
@@ -187,7 +209,7 @@ struct FeatureRow: View {
 }
 
 struct PermissionsStep: View {
-    @State private var hasAccessibilityPermission = false
+    @Binding var hasAccessibilityPermission: Bool
     
     var body: some View {
         VStack(spacing: Token.Spacing.x4) {
@@ -226,13 +248,6 @@ struct PermissionsStep: View {
             Spacer()
         }
         .padding(Token.Spacing.x4)
-        .onAppear {
-            checkPermissionStatus()
-        }
-    }
-    
-    private func checkPermissionStatus() {
-        hasAccessibilityPermission = AXIsProcessTrusted()
     }
     
     private func checkAndRequestPermission() {
@@ -362,45 +377,47 @@ struct CompletionStep: View {
     @StateObject private var settings = SettingsService.shared
     
     var body: some View {
-        VStack(spacing: Token.Spacing.x4) {
+        VStack(spacing: Token.Spacing.x3) {
             Spacer()
             
             Image(systemName: "checkmark.circle.fill")
-                .font(.system(size: 80))
+                .font(.system(size: 60))
                 .foregroundColor(.green)
             
             Text("You're All Set!")
-                .textStyle(.displayLarge)
+                .textStyle(.title)
             
             Text("HumanCron is ready to help you stay productive")
-                .textStyle(.title)
+                .textStyle(.body)
                 .foregroundColor(Token.Color.onSurface.opacity(0.7))
+                .multilineTextAlignment(.center)
             
-            VStack(alignment: .leading, spacing: Token.Spacing.x3) {
+            VStack(alignment: .leading, spacing: Token.Spacing.x2) {
                 HotkeyReminder(hotkey: settings.globalHotkey)
                 
                 DSDivider()
                 
-                VStack(alignment: .leading, spacing: Token.Spacing.x2) {
+                VStack(alignment: .leading, spacing: Token.Spacing.x1) {
                     Text("Quick Tips:")
-                        .textStyle(.headline)
+                        .textStyle(.body)
+                        .fontWeight(.medium)
                     
                     Label("Press Enter to advance to the next step", systemImage: "return")
-                        .textStyle(.bodySmall)
+                        .textStyle(.caption)
                     
                     Label("Press Cmd+Enter to advance and open links", systemImage: "command")
-                        .textStyle(.bodySmall)
+                        .textStyle(.caption)
                     
                     Label("Press Escape to close the app", systemImage: "escape")
-                        .textStyle(.bodySmall)
+                        .textStyle(.caption)
                 }
             }
-            .padding(Token.Spacing.x4)
+            .padding(Token.Spacing.x3)
             .background(
                 RoundedRectangle(cornerRadius: Token.Radius.md)
                     .fill(Token.Color.surface)
             )
-            .padding(.horizontal, Token.Spacing.x6)
+            .padding(.horizontal, Token.Spacing.x4)
             
             Spacer()
         }
@@ -414,15 +431,16 @@ struct HotkeyReminder: View {
     var body: some View {
         HStack {
             Image(systemName: "keyboard")
-                .font(.system(size: 24))
+                .font(.system(size: 20))
                 .foregroundColor(Token.Color.brand)
             
-            VStack(alignment: .leading) {
+            VStack(alignment: .leading, spacing: 2) {
                 Text("Launch HumanCron anytime with:")
-                    .textStyle(.bodySmall)
+                    .textStyle(.caption)
                 Text(hotkey.uppercased())
-                    .textStyle(.title)
+                    .textStyle(.body)
                     .fontDesign(.monospaced)
+                    .fontWeight(.medium)
             }
             
             Spacer()

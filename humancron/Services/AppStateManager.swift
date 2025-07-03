@@ -484,10 +484,11 @@ class AppStateManager: ObservableObject {
         if onboardingWindow == nil {
             let onboardingView = OnboardingView()
             let hostingController = NSHostingController(rootView: onboardingView)
+            hostingController.view.frame = NSRect(x: 0, y: 0, width: 700, height: 540)
             
             // Use borderless window to match main app style
             let window = BorderlessWindow(
-                contentRect: NSRect(x: 0, y: 0, width: 600, height: 500),
+                contentRect: NSRect(x: 0, y: 0, width: 700, height: 540),
                 styleMask: [.borderless, .fullSizeContentView],
                 backing: .buffered,
                 defer: false
@@ -498,6 +499,8 @@ class AppStateManager: ObservableObject {
             window.isOpaque = false
             window.backgroundColor = .clear
             window.level = .floating
+            window.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
+            window.isMovableByWindowBackground = false // We handle dragging with WindowDragView
             // window.hasShadow = false // We add our own shadow in the view
             
             onboardingWindow = window

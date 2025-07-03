@@ -8,16 +8,16 @@ struct SettingsView: View {
     var body: some View {
         ZStack {
             // Background with blur effect to match main app
-            VisualEffectBackground()
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            Color.clear
+                .background(VisualEffectBackground())
+                .ignoresSafeArea()
             
             VStack(spacing: 0) {
-                // Drag handle area at the top to match main app
+                // Custom title bar
                 HStack {
                     Text("Preferences")
                         .textStyle(.headline)
                         .foregroundColor(Token.Color.onSurface)
-                        .padding(.leading, Token.Spacing.x4)
                     
                     Spacer()
                     
@@ -30,9 +30,9 @@ struct SettingsView: View {
                             .foregroundColor(Token.Color.onSurface.opacity(0.6))
                     }
                     .buttonStyle(.plain)
-                    .padding(.trailing, Token.Spacing.x3)
                 }
-                .frame(height: 40)
+                .padding(.horizontal, Token.Spacing.x4)
+                .padding(.vertical, Token.Spacing.x3)
                 .background(WindowDragView())
                 
                 // Tab Bar
@@ -85,8 +85,7 @@ struct SettingsView: View {
             }
         }
         .frame(width: 600, height: 400)
-        .clipShape(RoundedRectangle(cornerRadius: Token.Radius.lg))
-        .shadow(radius: 20)
+        .background(Color.clear)
     }
 }
 
