@@ -10,7 +10,6 @@ struct WorkflowSelectorView: View {
     @State private var searchText = ""
     @State private var selectedIndex = 0
     @State private var hoveredIndex: Int? = nil
-    @State private var eventMonitor: Any?
     @FocusState private var isSearchFieldFocused: Bool
     
     var filteredWorkflows: [Workflow] {
@@ -34,6 +33,10 @@ struct WorkflowSelectorView: View {
                     .textFieldStyle(.plain)
                     .font(.system(size: 16))
                     .focused($isSearchFieldFocused)
+                    .onChange(of: searchText) { oldValue, newValue in
+                        // Reset selection to first item when search changes
+                        selectedIndex = 0
+                    }
                     .onSubmit {
                         selectWorkflow()
                     }
@@ -108,11 +111,9 @@ struct WorkflowSelectorView: View {
                     }
                 }
             }
-            
         }
         .onAppear {
             selectedIndex = 0
-            setupKeyboardHandling()
             // Focus the search field after a small delay to ensure the view is fully loaded
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                 isSearchFieldFocused = true
@@ -120,93 +121,33 @@ struct WorkflowSelectorView: View {
             // Prefetch favicons for all workflows
             faviconService.prefetchFavicons(for: workflowService.workflows)
         }
-        .onDisappear {
-            removeKeyboardHandling()
-        }
         .onReceive(NotificationCenter.default.publisher(for: .selectWorkflow)) { _ in
             selectWorkflow()
         }
-    }
-    
-    private func setupKeyboardHandling() {
-        // Remove any existing monitor
-        removeKeyboardHandling()
-        
-        // Add new monitor for keyboard events
-        eventMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
-            // Get the first responder to check if search field is focused
-            let firstResponder = NSApp.keyWindow?.firstResponder
-            let isTextFieldFocused = firstResponder is NSTextView
-            
-            // Check for Shift+P to toggle pinning
-            if event.modifierFlags.contains(.shift) && event.keyCode == 35 { // P key
-                appState.isPinned.toggle()
-                return nil // Consume the event
+        // Handle keyboard shortcuts using SwiftUI modifiers
+        .onKeyPress(.upArrow) {
+            if selectedIndex > 0 {
+                selectedIndex -= 1
             }
-            
-            // Check for Cmd+, to open preferences
-            if event.modifierFlags.contains(.command) && event.keyCode == 43 { // Comma key
-                appState.showPreferences()
-                return nil // Consume the event
-            }
-            
-            // Check if we're typing in the search field (no modifiers except shift)
-            let hasModifiers = event.modifierFlags.contains(.command) || 
-                             event.modifierFlags.contains(.control) || 
-                             event.modifierFlags.contains(.option)
-            
-            // If text field is focused and we're typing regular characters, let them through
-            if isTextFieldFocused && !hasModifiers {
-                switch event.keyCode {
-                case 126, 125, 36, 53: // Arrow keys, Enter, Escape
-                    // Handle navigation keys even when text field is focused
-                    break
-                default:
-                    // Let all other keys through for typing
-                    return event
-                }
-            }
-            
-            if !hasModifiers {
-                switch event.keyCode {
-                case 126: // Arrow Up
-                    if selectedIndex > 0 {
-                        selectedIndex -= 1
-                    }
-                    return nil // Consume the event
-                    
-                case 125: // Arrow Down
-                    if selectedIndex < filteredWorkflows.count - 1 {
-                        selectedIndex += 1
-                    }
-                    return nil // Consume the event
-                    
-                case 36: // Enter
-                    selectWorkflow()
-                    return nil // Consume the event
-                    
-                case 124: // Right arrow
-                    selectWorkflow()
-                    return nil // Consume the event
-                    
-                case 53: // Escape
-                    appState.hideApp(force: true)
-                    return nil // Consume the event
-                    
-                    
-                default:
-                    return nil // Consume all other events
-                }
-            }
-            
-            return nil // Consume all events by default
+            return .handled
         }
-    }
-    
-    private func removeKeyboardHandling() {
-        if let monitor = eventMonitor {
-            NSEvent.removeMonitor(monitor)
-            eventMonitor = nil
+        .onKeyPress(.downArrow) {
+            if selectedIndex < filteredWorkflows.count - 1 {
+                selectedIndex += 1
+            }
+            return .handled
+        }
+        .onKeyPress(.return) {
+            selectWorkflow()
+            return .handled
+        }
+        .onKeyPress(.rightArrow) {
+            selectWorkflow()
+            return .handled
+        }
+        .onKeyPress(.escape) {
+            appState.hideApp(force: true)
+            return .handled
         }
     }
     

@@ -42,16 +42,40 @@ class AppStateManager: ObservableObject {
     }
     
     func setup(window: NSWindow?) {
-        self.window = window
+        // If we get a regular window, we need to replace it with our BorderlessWindow
+        if let originalWindow = window {
+            // Get the content view
+            let contentView = originalWindow.contentView
+            
+            // Create our custom borderless window
+            let borderlessWindow = BorderlessWindow(
+                contentRect: originalWindow.frame,
+                styleMask: [.borderless, .fullSizeContentView],
+                backing: .buffered,
+                defer: false
+            )
+            
+            // Transfer the content view
+            if let contentView = contentView {
+                borderlessWindow.contentView = contentView
+            }
+            
+            // Store our custom window
+            self.window = borderlessWindow
+            
+            // Close the original window
+            originalWindow.close()
+        }
+        
         configureWindow()
         
         // Set up window delegate to track movement
         windowDelegate = WindowDelegate(appState: self)
-        window?.delegate = windowDelegate
+        self.window?.delegate = windowDelegate
         
         // Initially hide the window after a short delay to ensure it's fully initialized
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
-            window?.orderOut(nil)
+            self?.window?.orderOut(nil)
             self?.isActive = false
         }
     }
@@ -63,8 +87,6 @@ class AppStateManager: ObservableObject {
         window.isOpaque = false
         window.backgroundColor = .clear
         window.level = .floating
-        // Use borderless window style to remove all chrome
-        window.styleMask = [.borderless, .fullSizeContentView]
         window.isMovableByWindowBackground = false
         window.isReleasedWhenClosed = false
         window.hidesOnDeactivate = false
