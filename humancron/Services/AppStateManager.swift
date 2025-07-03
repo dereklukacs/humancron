@@ -442,18 +442,23 @@ class AppStateManager: ObservableObject {
     func showPreferences() {
         if preferencesWindow == nil {
             let settingsView = SettingsView()
+            
             let hostingController = NSHostingController(rootView: settingsView)
             
-            let window = NSWindow(
+            // Use borderless window to match main app style
+            let window = BorderlessWindow(
                 contentRect: NSRect(x: 0, y: 0, width: 600, height: 400),
-                styleMask: [.titled, .closable, .miniaturizable],
+                styleMask: [.borderless, .fullSizeContentView],
                 backing: .buffered,
                 defer: false
             )
-            window.title = "Preferences"
             window.contentViewController = hostingController
             window.center()
             window.isReleasedWhenClosed = false
+            window.isOpaque = false
+            window.backgroundColor = .clear
+            window.level = .floating
+            window.hasShadow = false // We add our own shadow in the view
             
             preferencesWindow = window
         }
@@ -480,16 +485,20 @@ class AppStateManager: ObservableObject {
             let onboardingView = OnboardingView()
             let hostingController = NSHostingController(rootView: onboardingView)
             
-            let window = NSWindow(
+            // Use borderless window to match main app style
+            let window = BorderlessWindow(
                 contentRect: NSRect(x: 0, y: 0, width: 600, height: 500),
-                styleMask: [.titled, .closable],
+                styleMask: [.borderless, .fullSizeContentView],
                 backing: .buffered,
                 defer: false
             )
-            window.title = "Welcome to HumanCron"
             window.contentViewController = hostingController
             window.center()
             window.isReleasedWhenClosed = false
+            window.isOpaque = false
+            window.backgroundColor = .clear
+            window.level = .floating
+            window.hasShadow = false // We add our own shadow in the view
             
             onboardingWindow = window
         }

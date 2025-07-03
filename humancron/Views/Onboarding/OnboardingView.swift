@@ -14,16 +14,32 @@ struct OnboardingView: View {
             
             VStack(spacing: 0) {
                 // Drag handle area at the top to match main app
-                Rectangle()
-                    .fill(Color.clear)
-                    .frame(height: 30)
-                    .overlay(
-                        // Visual drag indicator in center
-                        Capsule()
-                            .fill(Token.Color.onSurface.opacity(0.1))
-                            .frame(width: 50, height: 4)
-                    )
-                    .background(WindowDragView())
+                ZStack {
+                    Rectangle()
+                        .fill(Color.clear)
+                        .frame(height: 40)
+                        .background(WindowDragView())
+                    
+                    HStack {
+                        Text("Welcome to HumanCron")
+                            .textStyle(.headline)
+                            .foregroundColor(Token.Color.onSurface)
+                            .padding(.leading, Token.Spacing.x4)
+                        
+                        Spacer()
+                        
+                        // Close button
+                        Button(action: {
+                            dismiss()
+                        }) {
+                            Image(systemName: "xmark.circle.fill")
+                                .font(.system(size: 16))
+                                .foregroundColor(Token.Color.onSurface.opacity(0.6))
+                        }
+                        .buttonStyle(.plain)
+                        .padding(.trailing, Token.Spacing.x3)
+                    }
+                }
                 
                 // Progress indicator
                 ProgressBar(currentStep: currentStep, totalSteps: 4)
