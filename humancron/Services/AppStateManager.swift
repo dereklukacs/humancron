@@ -91,7 +91,7 @@ class AppStateManager: ObservableObject {
         window.isReleasedWhenClosed = false
         window.hidesOnDeactivate = false
         window.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .transient]
-        window.hasShadow = false // We'll add our own shadow
+        // window.hasShadow = false // We'll add our own shadow
         
         // Initial center
         centerWindow()
@@ -458,7 +458,7 @@ class AppStateManager: ObservableObject {
             window.isOpaque = false
             window.backgroundColor = .clear
             window.level = .floating
-            window.hasShadow = false // We add our own shadow in the view
+            // window.hasShadow = false // We add our own shadow in the view
             
             preferencesWindow = window
         }
@@ -498,7 +498,7 @@ class AppStateManager: ObservableObject {
             window.isOpaque = false
             window.backgroundColor = .clear
             window.level = .floating
-            window.hasShadow = false // We add our own shadow in the view
+            // window.hasShadow = false // We add our own shadow in the view
             
             onboardingWindow = window
         }
