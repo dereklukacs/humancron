@@ -36,23 +36,7 @@ struct WorkflowSelectorView: View {
                         selectWorkflow()
                     }
                 
-                HStack {
-                    Image(systemName: "magnifyingglass")
-                        .foregroundColor(Token.Color.onSurface.opacity(0.5))
-                        .padding(.leading, Token.Spacing.x3)
-                        .allowsHitTesting(false)
-                    
-                    Spacer()
-                    
-                    if !searchText.isEmpty {
-                        Button(action: { searchText = "" }) {
-                            Image(systemName: "xmark.circle.fill")
-                                .foregroundColor(Token.Color.onSurface.opacity(0.5))
-                        }
-                        .buttonStyle(.plain)
-                        .padding(.trailing, Token.Spacing.x3)
-                    }
-                }
+                
             }
             
             // Workflow list

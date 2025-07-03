@@ -15,10 +15,22 @@ public struct DSTextField: View {
         Group {
             if isSecure {
                 SecureField(placeholder, text: $text)
-                    .textFieldStyle(DSTextFieldStyle())
+                    .textFieldStyle(.plain)
+                    .font(.system(size: Typography.TextStyle.body.size, weight: Typography.TextStyle.body.weight))
+                    .padding(.horizontal, Token.Spacing.x3)
+                    .padding(.vertical, Token.Spacing.x2)
+                    .background(Token.Color.surface)
+                    .cornerRadius(Token.Radius.md)
+                    .focusEffectDisabled()
             } else {
                 TextField(placeholder, text: $text)
-                    .textFieldStyle(DSTextFieldStyle())
+                    .textFieldStyle(.plain)
+                    .font(.system(size: Typography.TextStyle.body.size, weight: Typography.TextStyle.body.weight))
+                    .padding(.horizontal, Token.Spacing.x3)
+                    .padding(.vertical, Token.Spacing.x2)
+                    .background(Token.Color.surface)
+                    .cornerRadius(Token.Radius.md)
+                    .focusEffectDisabled()
             }
         }
     }
@@ -36,6 +48,7 @@ struct DSTextFieldStyle: TextFieldStyle {
                 RoundedRectangle(cornerRadius: Token.Radius.md)
                     .stroke(Token.Color.stroke, lineWidth: 1)
             )
+            .focusEffectDisabled()
     }
 }
 
