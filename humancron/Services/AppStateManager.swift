@@ -165,7 +165,7 @@ class AppStateManager: ObservableObject {
     
     func toggleApp() {
         if isActive {
-            hideApp()
+            hideApp(force: true)
         } else {
             showApp()
         }
