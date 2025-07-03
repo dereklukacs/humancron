@@ -74,7 +74,7 @@ struct WorkflowSelectorView: View {
                 }
                 Spacer()
             } else {
-                ScrollView {
+                DSScrollView {
                     VStack(spacing: Token.Spacing.x2) {
                         ForEach(Array(filteredWorkflows.enumerated()), id: \.element.id) { index, workflow in
                             WorkflowRow(
@@ -192,19 +192,12 @@ struct WorkflowRow: View {
         }
         .padding(Token.Spacing.x3)
         .background(
-            isSelected ? Token.Color.brand.opacity(0.1) : 
-            isHovered ? Token.Color.surface.opacity(0.8) : 
-            Color.clear
-        )
-        .overlay(
             RoundedRectangle(cornerRadius: Token.Radius.md)
-                .stroke(
-                    isSelected ? Token.Color.brand : 
-                    isHovered ? Token.Color.onSurface.opacity(0.2) : 
-                    Color.clear, 
-                    lineWidth: isSelected ? 2 : 1
+                .fill(
+                    isSelected ? Token.Color.brand.opacity(0.1) : 
+                    isHovered ? Token.Color.brand.opacity(0.05) : 
+                    Color.clear
                 )
         )
-        .cornerRadius(Token.Radius.md)
     }
 }

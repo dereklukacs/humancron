@@ -5,7 +5,7 @@ struct HotkeyBar: View {
     let items: [HotkeyItem]
     
     var body: some View {
-        HStack(spacing: Token.Spacing.x3) {
+        HStack(spacing: Token.Spacing.x1) {
             ForEach(items) { item in
                 Button(action: {
                     item.action?()
@@ -39,6 +39,8 @@ struct HotkeyItemView: View {
             Text(item.label)
                 .textStyle(.caption)
                 .foregroundColor(Token.Color.onBackground.opacity(item.action == nil ? 0.4 : 0.8))
+                .lineLimit(1)
+                .truncationMode(.tail)
         }
     }
 }

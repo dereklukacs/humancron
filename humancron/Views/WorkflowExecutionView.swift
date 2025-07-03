@@ -54,7 +54,7 @@ struct WorkflowExecutionView: View {
             
             // Checklist of all steps
             ScrollViewReader { proxy in
-                ScrollView {
+                DSScrollView {
                     VStack(spacing: Token.Spacing.x2) {
                         if let workflow = appState.currentWorkflow {
                             ForEach(Array(workflow.steps.enumerated()), id: \.element.id) { index, step in
@@ -71,6 +71,7 @@ struct WorkflowExecutionView: View {
                             }
                         }
                     }
+                    .padding(.horizontal, Token.Spacing.x4)
                     .frame(maxWidth: .infinity)
                 }
                 .onChange(of: appState.currentStep) { newValue in
@@ -263,7 +264,7 @@ struct ChecklistStepRow: View {
             HStack(spacing: Token.Spacing.x2) {
                 Text(step.name)
                     .textStyle(.body)
-                    .fontWeight(isCurrent ? .semibold : .medium)
+                    .fontWeight(.medium)
                     .foregroundColor(isCompleted ? Token.Color.onBackground.opacity(0.5) : Token.Color.onBackground)
                     .strikethrough(isCompleted, color: Token.Color.onBackground.opacity(0.5))
                 
@@ -336,19 +337,8 @@ struct ChecklistStepRow: View {
             RoundedRectangle(cornerRadius: Token.Radius.md)
                 .fill(
                     isCurrent ? Token.Color.brand.opacity(0.1) : 
-                    isHovered ? Token.Color.surface.opacity(0.8) : 
+                    isHovered ? Token.Color.brand.opacity(0.05) : 
                     Color.clear
-                )
-                .animation(.easeInOut(duration: 0.2), value: isCurrent)
-                .animation(.easeInOut(duration: 0.1), value: isHovered)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: Token.Radius.md)
-                .stroke(
-                    isCurrent ? Token.Color.brand.opacity(1.0) : 
-                    isHovered ? Token.Color.onSurface.opacity(0.2) : 
-                    Color.clear, 
-                    lineWidth: isCurrent ? 2 : 1
                 )
                 .animation(.easeInOut(duration: 0.2), value: isCurrent)
                 .animation(.easeInOut(duration: 0.1), value: isHovered)
