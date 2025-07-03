@@ -1,0 +1,24 @@
+name: "Test Command Execution"
+description: "Workflow to test command execution feature"
+hotkey: "cmd+9"
+steps:
+  - name: "Check System Info"
+    description: "Display system information"
+    command: "uname -a"
+    
+  - name: "List Files"
+    description: "List files in home directory"
+    command: "ls -la ~/ | head -10"
+    
+  - name: "Check Date and Time"
+    description: "Show current date and time"
+    command: "date"
+    
+  - name: "Open Calendar and Run Script"
+    description: "Open calendar app and generate summary"
+    link: "calendar://"
+    command: "echo 'Calendar opened at:' && date"
+    
+  - name: "Test Error Handling"
+    description: "Test command that fails"
+    command: "cat /nonexistent/file.txt"

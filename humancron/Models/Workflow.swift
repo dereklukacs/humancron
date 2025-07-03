@@ -29,6 +29,7 @@ struct WorkflowStep: Identifiable, Codable {
     let name: String
     let description: String
     let link: String?
+    let command: String?
     let duration: TimeInterval?
     let automations: [WorkflowAutomation]?
     
@@ -36,6 +37,7 @@ struct WorkflowStep: Identifiable, Codable {
         case name
         case description
         case link
+        case command
         case duration
         case automations
     }
@@ -83,6 +85,7 @@ extension WorkflowStep {
         self.name = name
         self.description = description
         self.link = dict["link"] as? String
+        self.command = dict["command"] as? String
         
         // Parse duration (in seconds from YAML)
         if let durationSeconds = dict["duration"] as? Double {
@@ -129,6 +132,7 @@ extension Workflow {
                     name: "Check Calendar",
                     description: "Review today's meetings and events",
                     link: "notion-calendar://",
+                    command: nil,
                     duration: 180,
                     automations: nil
                 ),
@@ -136,6 +140,7 @@ extension Workflow {
                     name: "Review Tasks",
                     description: "Check Linear for today's priorities",
                     link: "https://linear.app/team/inbox",
+                    command: nil,
                     duration: nil,
                     automations: [
                         WorkflowAutomation(
@@ -149,6 +154,7 @@ extension Workflow {
                     name: "Update Status",
                     description: "Post daily plan to Slack",
                     link: "slack://channel?team=T123&id=C456",
+                    command: nil,
                     duration: nil,
                     automations: nil
                 )

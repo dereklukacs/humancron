@@ -119,6 +119,7 @@ struct WorkflowExecutionView: View {
             if event.modifierFlags.contains(.command) {
                 switch event.keyCode {
                 case 36: // Cmd+Enter - advance and trigger automation
+                    // Open link if present
                     if let link = currentStep?.link {
                         openLink(link)
                         appState.markLinkAsOpened(forStep: appState.currentStep)
@@ -166,6 +167,11 @@ struct WorkflowExecutionView: View {
             case 123: // Left arrow - back to workflow list
                 appState.backToWorkflowList()
                 return nil
+            case 15: // R key - run command for current step
+                if currentStep?.command != nil {
+                    appState.shouldExecuteCommand = true
+                }
+                return nil
             default:
                 return nil // Consume all other events
             }
@@ -198,6 +204,9 @@ struct ChecklistStepRow: View {
     let favicon: NSImage?
     let stepIndex: Int
     @State private var isHovered = false
+    @State private var commandState: CommandState = .ready
+    @State private var commandResult: CommandResult?
+    @State private var isExecutingCommand = false
     
     var body: some View {
         HStack(alignment: .center, spacing: Token.Spacing.x3) {
@@ -264,6 +273,14 @@ struct ChecklistStepRow: View {
                     }
                 }
                 
+                // Command status indicator
+                if step.command != nil {
+                    CommandStatus(
+                        state: commandState,
+                        executionResult: commandResult
+                    )
+                }
+                
                 if let duration = step.duration {
                     Spacer()
                     HStack(spacing: Token.Spacing.x1) {
@@ -308,6 +325,36 @@ struct ChecklistStepRow: View {
         )
         .onHover { hovering in
             isHovered = hovering
+        }
+        .onChange(of: appState.shouldExecuteCommand) { newValue in
+            // Execute command when R is pressed on current step
+            if newValue && isCurrent {
+                executeCommandIfNeeded()
+                appState.shouldExecuteCommand = false
+            }
+        }
+    }
+    
+    private func executeCommandIfNeeded() {
+        guard let command = step.command,
+              !isExecutingCommand,
+              commandState != .running else { return }
+        
+        isExecutingCommand = true
+        commandState = .running
+        
+        Task {
+            let result = await CommandExecutionService.shared.executeCommand(
+                command,
+                workflowName: appState.currentWorkflow?.name ?? "",
+                stepName: step.name
+            )
+            
+            await MainActor.run {
+                commandResult = result
+                commandState = result.exitCode == 0 ? .success : .failure
+                isExecutingCommand = false
+            }
         }
     }
 }

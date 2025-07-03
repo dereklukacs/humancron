@@ -12,6 +12,7 @@ class AppStateManager: ObservableObject {
     @Published var openedLinksForSteps: Set<Int> = []
     @Published var completedSteps: Set<Int> = []
     @Published var isPinned = false
+    @Published var shouldExecuteCommand: Bool = false
     
     // Store paused workflow state
     private var pausedWorkflow: Workflow?
