@@ -86,7 +86,8 @@ struct WorkflowsSettingsView: View {
         panel.prompt = "Select Workflows Directory"
         
         if panel.runModal() == .OK, let url = panel.url {
-            settings.workflowsDirectory = url.path
+            // Use the new method that creates security-scoped bookmarks
+            settings.saveWorkflowsDirectory(url)
             
             // Notify workflow service to reload
             NotificationCenter.default.post(name: .workflowsDirectoryChanged, object: nil)

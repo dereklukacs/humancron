@@ -9,6 +9,7 @@ class SettingsService: ObservableObject {
     @AppStorage("launchAtLogin") var launchAtLogin: Bool = false
     @AppStorage("showInDock") var showInDock: Bool = false
     @AppStorage("workflowsDirectory") var workflowsDirectory: String = ""
+    @AppStorage("workflowsDirectoryBookmark") var workflowsDirectoryBookmarkData: Data?
     @AppStorage("windowPosition") var windowPosition: String = ""
     @AppStorage("windowSize") var windowSize: String = ""
     @AppStorage("hasCompletedOnboarding") var hasCompletedOnboarding: Bool = false
@@ -18,16 +19,79 @@ class SettingsService: ObservableObject {
     @Published var hotkeyModifiers: NSEvent.ModifierFlags = .option
     @Published var hotkeyKeyCode: UInt16 = 49 // Space key
     
+    // Security-scoped resource URL
+    private var securityScopedURL: URL?
+    
     private init() {
         // Parse stored hotkey on init
         parseStoredHotkey()
     }
     
     var effectiveWorkflowsDirectory: String {
-        if workflowsDirectory.isEmpty {
-            return NSHomeDirectory() + "/workflows/humancron"
+        // Try to use bookmark first
+        if let bookmarkData = workflowsDirectoryBookmarkData,
+           let url = resolveBookmark(bookmarkData) {
+            return url.path
         }
-        return workflowsDirectory
+        
+        // Fall back to stored path
+        if !workflowsDirectory.isEmpty {
+            return workflowsDirectory
+        }
+        
+        // Default directory
+        return NSHomeDirectory() + "/workflows/humancron"
+    }
+    
+    func saveWorkflowsDirectory(_ url: URL) {
+        // Store the path for display purposes
+        workflowsDirectory = url.path
+        
+        // Create and store security-scoped bookmark
+        do {
+            let bookmarkData = try url.bookmarkData(
+                options: [.withSecurityScope],
+                includingResourceValuesForKeys: nil,
+                relativeTo: nil
+            )
+            workflowsDirectoryBookmarkData = bookmarkData
+        } catch {
+            print("Failed to create bookmark: \(error)")
+        }
+    }
+    
+    private func resolveBookmark(_ bookmarkData: Data) -> URL? {
+        do {
+            var isStale = false
+            let url = try URL(
+                resolvingBookmarkData: bookmarkData,
+                options: [.withSecurityScope, .withoutUI],
+                relativeTo: nil,
+                bookmarkDataIsStale: &isStale
+            )
+            
+            if isStale {
+                print("Bookmark is stale, need to re-select directory")
+                return nil
+            }
+            
+            // Start accessing the security-scoped resource
+            if url.startAccessingSecurityScopedResource() {
+                // Store URL to stop accessing later if needed
+                securityScopedURL = url
+                return url
+            }
+            
+            return nil
+        } catch {
+            print("Failed to resolve bookmark: \(error)")
+            return nil
+        }
+    }
+    
+    func stopAccessingSecurityScopedResource() {
+        securityScopedURL?.stopAccessingSecurityScopedResource()
+        securityScopedURL = nil
     }
     
     func parseStoredHotkey() {
