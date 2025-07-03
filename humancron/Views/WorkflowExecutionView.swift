@@ -29,9 +29,13 @@ struct WorkflowExecutionView: View {
                     
                     Spacer()
                     
-                    Text("\(appState.completedSteps.count) of \(appState.currentWorkflow?.steps.count ?? 0) completed")
+                    Text(appState.completedSteps.count == appState.currentWorkflow?.steps.count ? 
+                         "All tasks completed! ✓" : 
+                         "\(appState.completedSteps.count) of \(appState.currentWorkflow?.steps.count ?? 0) completed")
                         .textStyle(.bodySmall)
-                        .foregroundColor(Token.Color.onBackground.opacity(0.7))
+                        .foregroundColor(appState.completedSteps.count == appState.currentWorkflow?.steps.count ?
+                                       Token.Color.success : 
+                                       Token.Color.onBackground.opacity(0.7))
                 }
                 
                 // Progress bar
@@ -42,7 +46,7 @@ struct WorkflowExecutionView: View {
                             .frame(height: 4)
                         
                         RoundedRectangle(cornerRadius: 2)
-                            .fill(Token.Color.brand)
+                            .fill(progress >= 1.0 ? Token.Color.success : Token.Color.brand)
                             .frame(width: geometry.size.width * progress, height: 4)
                             .animation(.easeInOut(duration: Token.Motion.normal), value: progress)
                     }
@@ -69,6 +73,16 @@ struct WorkflowExecutionView: View {
                                 )
                                 .id(index)
                             }
+                            
+                            // Show Finish button when all steps are completed
+                            if appState.completedSteps.count == workflow.steps.count {
+                                FinishButton(isFocused: appState.currentStep == workflow.steps.count)
+                                    .id("finish")
+                                    .onTapGesture {
+                                        // Focus on finish button when clicked
+                                        appState.currentStep = workflow.steps.count
+                                    }
+                            }
                         }
                     }
                     .padding(.horizontal, Token.Spacing.x4)
@@ -77,7 +91,13 @@ struct WorkflowExecutionView: View {
                 .onChange(of: appState.currentStep) { newValue in
                     // Scroll to current step when it changes
                     withAnimation {
-                        proxy.scrollTo(newValue, anchor: .center)
+                        if let workflow = appState.currentWorkflow,
+                           newValue == workflow.steps.count {
+                            // Scroll to finish button
+                            proxy.scrollTo("finish", anchor: .center)
+                        } else {
+                            proxy.scrollTo(newValue, anchor: .center)
+                        }
                     }
                 }
                 .onAppear {
@@ -139,9 +159,19 @@ struct WorkflowExecutionView: View {
             
             // Regular key handling
             switch event.keyCode {
-            case 36: // Enter - toggle completion status
+            case 36: // Enter - toggle completion status or finish workflow
                 if !event.modifierFlags.contains(.command) {
-                    appState.toggleCurrentStepCompletion()
+                    if let workflow = appState.currentWorkflow {
+                        // Check if we're on the finish button
+                        if appState.currentStep == workflow.steps.count &&
+                           appState.completedSteps.count == workflow.steps.count {
+                            // On finish button, complete workflow
+                            appState.completeWorkflow()
+                        } else if appState.currentStep < workflow.steps.count {
+                            // On a regular step, toggle completion
+                            appState.toggleCurrentStepCompletion()
+                        }
+                    }
                     return nil
                 }
             case 49: // Spacebar - open link
@@ -157,14 +187,24 @@ struct WorkflowExecutionView: View {
                 appState.completeWorkflow()
                 return nil
             case 126: // Up arrow - navigate to previous step
-                if appState.currentStep > 0 {
-                    appState.currentStep -= 1
+                if let workflow = appState.currentWorkflow {
+                    if appState.currentStep == workflow.steps.count {
+                        // From finish button, go to last step
+                        appState.currentStep = workflow.steps.count - 1
+                    } else if appState.currentStep > 0 {
+                        appState.currentStep -= 1
+                    }
                 }
                 return nil
             case 125: // Down arrow - navigate to next step
-                if let workflow = appState.currentWorkflow,
-                   appState.currentStep < workflow.steps.count - 1 {
-                    appState.currentStep += 1
+                if let workflow = appState.currentWorkflow {
+                    if appState.currentStep < workflow.steps.count - 1 {
+                        appState.currentStep += 1
+                    } else if appState.currentStep == workflow.steps.count - 1 && 
+                             appState.completedSteps.count == workflow.steps.count {
+                        // Move to finish button if all tasks are completed
+                        appState.currentStep = workflow.steps.count
+                    }
                 }
                 return nil
             case 123: // Left arrow - back to workflow list
@@ -376,6 +416,63 @@ struct ChecklistStepRow: View {
                 commandStateManager.setState(result.exitCode == 0 ? .success : .failure, workflowId: workflowId, stepId: step.id)
                 isExecutingCommand = false
             }
+        }
+    }
+}
+
+// MARK: - Finish Button
+
+struct FinishButton: View {
+    @EnvironmentObject var appState: AppStateManager
+    @State private var isHovered = false
+    let isFocused: Bool
+    
+    var body: some View {
+        Button(action: {
+            appState.completeWorkflow()
+        }) {
+            HStack(alignment: .center, spacing: Token.Spacing.x3) {
+                // Finish indicator - matches the checkbox style
+                ZStack {
+                    Image(systemName: "flag.circle.fill")
+                        .font(.system(size: 20))
+                        .foregroundColor(Token.Color.success)
+                }
+                .frame(width: 24, height: 24) // Same size as checkbox
+                
+                // Content
+                HStack(spacing: Token.Spacing.x2) {
+                    Text("Finish Workflow")
+                        .textStyle(.body)
+                        .fontWeight(.medium)
+                        .foregroundColor(Token.Color.onBackground)
+                    
+                    Spacer()
+                    
+                    Text("All tasks completed")
+                        .textStyle(.caption)
+                        .foregroundColor(Token.Color.onBackground.opacity(0.5))
+                }
+                
+                Spacer()
+            }
+            .padding(.horizontal, Token.Spacing.x3)
+            .padding(.vertical, Token.Spacing.x2)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .background(
+            RoundedRectangle(cornerRadius: Token.Radius.md)
+                .fill(
+                    isFocused ? Token.Color.brand.opacity(0.1) : 
+                    isHovered ? Token.Color.brand.opacity(0.05) : 
+                    Color.clear
+                )
+                .animation(.easeInOut(duration: 0.2), value: isFocused)
+                .animation(.easeInOut(duration: 0.1), value: isHovered)
+        )
+        .onHover { hovering in
+            isHovered = hovering
         }
     }
 }
