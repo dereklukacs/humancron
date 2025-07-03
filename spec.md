@@ -74,6 +74,14 @@ Primary: SwiftUI
 - should be draggable and resizable
 - position and size should persist between opens
 - position and size don't need to persist through app restart
+- can open and close main window with Option+Space
+- defocusing on the window hides it (similar to raycast or apple spotlight)
+
+## Pinning:
+- There should be a pin icon to make the ephemeral window more sticky
+- The main hide/show hotkey (option+space) should still toggle the window when pinned
+- A pinned window will not close automatically when opening a link or on defocus. 
+
 
 ## Workflow selection screen:
 - lists out workflows from the workflows folder
@@ -96,6 +104,8 @@ Primary: SwiftUI
 - After checking off an item, go to the next time in the list. Use "circular array" logic to loop around to skip tasks when at the end of the list.
 - After completing all items, show a "Finish" option at the end of the list
 - After the user activates "Finish", close the workflow and hide the window.
+
+
 
 
 ## Automations

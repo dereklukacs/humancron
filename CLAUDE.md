@@ -78,5 +78,12 @@ The project is in initial state with boilerplate code. Key features to implement
 
 See @spec.md for detailed requirements and user stories.
 
+Follow @spec.md as if it is the word of god. Seek to understand it. If you are confused ask for clarification.
+
 
 Can you try to always build with @Makefile commands
+
+
+Always use design tokens in the app.
+Always use components from the design system.
+- If a component does not exist, add it. Make sure it matches the style and theme of the app.
