@@ -32,6 +32,7 @@ public struct CommandStatus<Result: CommandResultProtocol>: View {
             HStack(spacing: 4) {
                 Image(systemName: "scroll")
                     .foregroundColor(iconColor)
+                    .frame(width: 14, height: 14)
                 
                 statusIcon
             }
@@ -39,6 +40,7 @@ public struct CommandStatus<Result: CommandResultProtocol>: View {
             .padding(.vertical, 2)
             .background(backgroundColor)
             .cornerRadius(4)
+
         } popoverContent: {
             if let result = executionResult {
                 CommandOutputView(result: result)
@@ -52,20 +54,23 @@ public struct CommandStatus<Result: CommandResultProtocol>: View {
     
     @ViewBuilder
     private var statusIcon: some View {
-        switch state {
-        case .ready:
-            EmptyView()
-        case .running:
-            ProgressView()
-                .progressViewStyle(CircularProgressViewStyle())
-                .scaleEffect(0.5)
-        case .success:
-            Image(systemName: "checkmark")
-                .foregroundColor(.green)
-        case .failure:
-            Image(systemName: "xmark")
-                .foregroundColor(.red)
-        }
+        
+            switch state {
+            case .ready:
+                Color.clear.frame(width: 0, height: 14)
+            case .running:
+                ProgressView()
+                    .progressViewStyle(CircularProgressViewStyle())
+                    .scaleEffect(0.5).frame(width: 14, height: 14)
+            case .success:
+                Image(systemName: "checkmark")
+                    .foregroundColor(.green).frame(width: 14, height: 14)
+            case .failure:
+                Image(systemName: "xmark")
+                    .foregroundColor(.red).frame(width: 14, height: 14)
+            }
+        
+        
     }
     
     private var iconColor: Color {
