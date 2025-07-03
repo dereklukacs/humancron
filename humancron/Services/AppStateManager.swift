@@ -97,19 +97,25 @@ class AppStateManager: ObservableObject {
     
     func saveWindowPosition() {
         guard let window = window else { return }
-        let position = window.frame.origin
-        lastWindowPosition = position
-        UserDefaults.standard.set(position.x, forKey: "HumanCronWindowX")
-        UserDefaults.standard.set(position.y, forKey: "HumanCronWindowY")
+        
+        // Save the top-left position instead of bottom-left to handle height changes
+        let frame = window.frame
+        let topLeftY = frame.origin.y + frame.height
+        
+        // Save position that will maintain top-left corner
+        lastWindowPosition = CGPoint(x: frame.origin.x, y: topLeftY)
+        UserDefaults.standard.set(frame.origin.x, forKey: "HumanCronWindowX")
+        UserDefaults.standard.set(topLeftY, forKey: "HumanCronWindowTopY")
     }
     
     private func loadWindowPosition() {
         let x = UserDefaults.standard.double(forKey: "HumanCronWindowX")
-        let y = UserDefaults.standard.double(forKey: "HumanCronWindowY")
+        let topY = UserDefaults.standard.double(forKey: "HumanCronWindowTopY")
         
-        // Only use saved position if it's not the default (0,0)
-        if x != 0 || y != 0 {
-            lastWindowPosition = CGPoint(x: x, y: y)
+        // Only use saved position if we have valid coordinates
+        if x != 0 || topY != 0 {
+            // We'll store top-left, but need to convert when showing window
+            lastWindowPosition = CGPoint(x: x, y: topY)
         }
     }
     
@@ -176,9 +182,14 @@ class AppStateManager: ObservableObject {
         
         // If we have a saved position, use it; otherwise position on active screen
         if let savedPosition = lastWindowPosition {
-            // Ensure the saved position is still visible on some screen
-            let windowSize = CGSize(width: 600, height: 400)
-            let windowFrame = NSRect(origin: savedPosition, size: windowSize)
+            // Get window size from settings
+            let settings = SettingsService.shared
+            let windowSize = CGSize(width: settings.windowWidth, height: settings.windowHeight)
+            
+            // Convert from saved top-left to bottom-left for window frame
+            let bottomLeftY = savedPosition.y - windowSize.height
+            let windowOrigin = CGPoint(x: savedPosition.x, y: bottomLeftY)
+            let windowFrame = NSRect(origin: windowOrigin, size: windowSize)
             
             let isVisible = NSScreen.screens.contains { screen in
                 screen.frame.intersects(windowFrame)
