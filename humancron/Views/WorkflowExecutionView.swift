@@ -48,6 +48,7 @@ struct WorkflowExecutionView: View {
                 }
                 .frame(height: 4)
             }
+            .padding(.horizontal, Token.Spacing.x4)
             .padding(.bottom, Token.Spacing.x4)
             
             // Checklist of all steps
@@ -69,7 +70,7 @@ struct WorkflowExecutionView: View {
                             }
                         }
                     }
-                    .padding(.vertical, Token.Spacing.x1)
+                    .frame(maxWidth: .infinity)
                 }
                 .onChange(of: appState.currentStep) { newValue in
                     // Scroll to current step when it changes

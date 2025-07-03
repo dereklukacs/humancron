@@ -141,13 +141,15 @@ struct MainOverlayView: View {
                     if appState.currentWorkflow == nil {
                         // Show workflow selector
                         WorkflowSelectorView()
+                            .padding(Token.Spacing.x4)
+                            .padding(.top, -Token.Spacing.x4) // Compensate for drag area
                     } else {
                         // Show workflow execution view
                         WorkflowExecutionView()
+                            .padding(.top, Token.Spacing.x4)
+                            .padding(.top, -Token.Spacing.x4) // Compensate for drag area
                     }
                 }
-                .padding(Token.Spacing.x4)
-                .padding(.top, -Token.Spacing.x4) // Compensate for drag area
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 
                 // Hotkey bar at bottom
