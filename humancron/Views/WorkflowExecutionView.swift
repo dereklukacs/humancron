@@ -66,7 +66,7 @@ struct WorkflowExecutionView: View {
                                     step: step,
                                     stepNumber: index + 1,
                                     isCompleted: appState.isStepCompleted(index),
-                                    isCurrent: index == appState.currentStep,
+                                    isCurrent: index == appState.currentStep && !appState.isFinishButtonFocused,
                                     isLinkOpened: appState.isLinkOpened(forStep: index),
                                     favicon: step.link != nil ? faviconService.favicon(for: step.link!) : nil,
                                     stepIndex: index
@@ -76,11 +76,11 @@ struct WorkflowExecutionView: View {
                             
                             // Show Finish button when all steps are completed
                             if appState.completedSteps.count == workflow.steps.count {
-                                FinishButton(isFocused: appState.currentStep == workflow.steps.count)
+                                FinishButton(isFocused: appState.isFinishButtonFocused)
                                     .id("finish")
                                     .onTapGesture {
                                         // Focus on finish button when clicked
-                                        appState.currentStep = workflow.steps.count
+                                        appState.isFinishButtonFocused = true
                                     }
                             }
                         }
@@ -91,12 +91,14 @@ struct WorkflowExecutionView: View {
                 .onChange(of: appState.currentStep) { newValue in
                     // Scroll to current step when it changes
                     withAnimation {
-                        if let workflow = appState.currentWorkflow,
-                           newValue == workflow.steps.count {
-                            // Scroll to finish button
+                        proxy.scrollTo(newValue, anchor: .center)
+                    }
+                }
+                .onChange(of: appState.isFinishButtonFocused) { isFocused in
+                    // Scroll to finish button when focused
+                    if isFocused {
+                        withAnimation {
                             proxy.scrollTo("finish", anchor: .center)
-                        } else {
-                            proxy.scrollTo(newValue, anchor: .center)
                         }
                     }
                 }
@@ -163,7 +165,7 @@ struct WorkflowExecutionView: View {
                 if !event.modifierFlags.contains(.command) {
                     if let workflow = appState.currentWorkflow {
                         // Check if we're on the finish button
-                        if appState.currentStep == workflow.steps.count &&
+                        if appState.isFinishButtonFocused &&
                            appState.completedSteps.count == workflow.steps.count {
                             // On finish button, complete workflow
                             appState.completeWorkflow()
@@ -188,8 +190,9 @@ struct WorkflowExecutionView: View {
                 return nil
             case 126: // Up arrow - navigate to previous step
                 if let workflow = appState.currentWorkflow {
-                    if appState.currentStep == workflow.steps.count {
+                    if appState.isFinishButtonFocused {
                         // From finish button, go to last step
+                        appState.isFinishButtonFocused = false
                         appState.currentStep = workflow.steps.count - 1
                     } else if appState.currentStep > 0 {
                         appState.currentStep -= 1
@@ -201,9 +204,10 @@ struct WorkflowExecutionView: View {
                     if appState.currentStep < workflow.steps.count - 1 {
                         appState.currentStep += 1
                     } else if appState.currentStep == workflow.steps.count - 1 && 
-                             appState.completedSteps.count == workflow.steps.count {
+                             appState.completedSteps.count == workflow.steps.count &&
+                             !appState.isFinishButtonFocused {
                         // Move to finish button if all tasks are completed
-                        appState.currentStep = workflow.steps.count
+                        appState.isFinishButtonFocused = true
                     }
                 }
                 return nil
@@ -372,6 +376,7 @@ struct ChecklistStepRow: View {
         .onTapGesture {
             // Select this step when clicking anywhere on the row
             appState.currentStep = stepIndex
+            appState.isFinishButtonFocused = false
         }
         .background(
             RoundedRectangle(cornerRadius: Token.Radius.md)

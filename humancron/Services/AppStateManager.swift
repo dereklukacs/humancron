@@ -13,6 +13,7 @@ class AppStateManager: ObservableObject {
     @Published var completedSteps: Set<Int> = []
     @Published var isPinned = false
     @Published var shouldExecuteCommand: Bool = false
+    @Published var isFinishButtonFocused = false
     
     // Store paused workflow state
     private var pausedWorkflow: Workflow?
@@ -289,11 +290,19 @@ class AppStateManager: ObservableObject {
     func toggleCurrentStepCompletion() {
         if completedSteps.contains(currentStep) {
             completedSteps.remove(currentStep)
+            isFinishButtonFocused = false
         } else {
             completedSteps.insert(currentStep)
             
-            // After marking as complete, move to next uncompleted task
-            moveToNextUncompletedStep()
+            // Check if this was the last task
+            if let workflow = currentWorkflow,
+               completedSteps.count == workflow.steps.count {
+                // All tasks completed - focus on finish button
+                isFinishButtonFocused = true
+            } else {
+                // After marking as complete, move to next uncompleted task
+                moveToNextUncompletedStep()
+            }
         }
         notifyWorkflowChange()
     }
@@ -356,6 +365,7 @@ class AppStateManager: ObservableObject {
         currentStep = 0
         completedSteps.removeAll()
         openedLinksForSteps.removeAll()
+        isFinishButtonFocused = false
         hideApp()
         notifyWorkflowChange()
     }
@@ -399,6 +409,7 @@ class AppStateManager: ObservableObject {
         currentStep = 0
         openedLinksForSteps.removeAll()
         completedSteps.removeAll()
+        isFinishButtonFocused = false
         notifyWorkflowChange()
     }
     
