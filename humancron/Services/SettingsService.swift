@@ -25,7 +25,7 @@ class SettingsService: ObservableObject {
     
     var effectiveWorkflowsDirectory: String {
         if workflowsDirectory.isEmpty {
-            return NSHomeDirectory() + "/.humancron/workflows"
+            return NSHomeDirectory() + "/workflows/humancron"
         }
         return workflowsDirectory
     }

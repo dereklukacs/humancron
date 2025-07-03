@@ -196,6 +196,7 @@ struct WorkflowExecutionView: View {
 
 struct ChecklistStepRow: View {
     @EnvironmentObject var appState: AppStateManager
+    @StateObject private var commandStateManager = CommandStateManager.shared
     let step: WorkflowStep
     let stepNumber: Int
     let isCompleted: Bool
@@ -204,9 +205,17 @@ struct ChecklistStepRow: View {
     let favicon: NSImage?
     let stepIndex: Int
     @State private var isHovered = false
-    @State private var commandState: CommandState = .ready
-    @State private var commandResult: CommandResult?
     @State private var isExecutingCommand = false
+    
+    private var commandState: CommandState {
+        guard let workflowId = appState.currentWorkflow?.id else { return .ready }
+        return commandStateManager.getState(workflowId: workflowId, stepId: step.id)
+    }
+    
+    private var commandResult: CommandResult? {
+        guard let workflowId = appState.currentWorkflow?.id else { return nil }
+        return commandStateManager.getResult(workflowId: workflowId, stepId: step.id)
+    }
     
     var body: some View {
         HStack(alignment: .center, spacing: Token.Spacing.x3) {
@@ -338,10 +347,11 @@ struct ChecklistStepRow: View {
     private func executeCommandIfNeeded() {
         guard let command = step.command,
               !isExecutingCommand,
-              commandState != .running else { return }
+              commandState != .running,
+              let workflowId = appState.currentWorkflow?.id else { return }
         
         isExecutingCommand = true
-        commandState = .running
+        commandStateManager.setState(.running, workflowId: workflowId, stepId: step.id)
         
         Task {
             let result = await CommandExecutionService.shared.executeCommand(
@@ -351,8 +361,8 @@ struct ChecklistStepRow: View {
             )
             
             await MainActor.run {
-                commandResult = result
-                commandState = result.exitCode == 0 ? .success : .failure
+                commandStateManager.setResult(result, workflowId: workflowId, stepId: step.id)
+                commandStateManager.setState(result.exitCode == 0 ? .success : .failure, workflowId: workflowId, stepId: step.id)
                 isExecutingCommand = false
             }
         }
