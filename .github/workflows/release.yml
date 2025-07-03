@@ -1,0 +1,75 @@
+name: Build and Release macOS App
+
+on:
+  push:
+    tags:
+      - "v*.*.*"     # e.g. v1.0.0
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-14
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      # Cache SwiftPM dependencies to speed up subsequent runs
+      - name: Cache SwiftPM
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.swiftpm
+            .build
+          key: ${{ runner.os }}-spm-${{ hashFiles('**/Package.resolved') }}
+          restore-keys: ${{ runner.os }}-spm-
+
+      # Build a Release archive of the app
+      - name: Build .xcarchive
+        run: |
+          set -euo pipefail
+          xcodebuild \
+            -scheme humancron \
+            -project humancron/humancron.xcodeproj \
+            -configuration Release \
+            -destination "platform=macOS" \
+            -archivePath build/humancron.xcarchive \
+            clean archive
+
+      # Package the .app into a zip for distribution
+      - name: Package .app
+        run: |
+          set -euo pipefail
+          mkdir -p build/export
+          cp -R build/humancron.xcarchive/Products/Applications/humancron.app build/export/
+          pushd build/export
+          zip -r humancron.zip humancron.app
+          popd
+
+      # Upload zip so the release job can attach it
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: humancron-app
+          path: build/export/humancron.zip
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write     # required for creating a release and uploading assets
+    steps:
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: humancron-app
+          path: .
+
+      # Create GitHub release (or reuse existing one) and attach the zip
+      - name: Create GitHub Release and upload asset
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
+          body: |
+            Automated build of commit ${{ github.sha }}.
+          files: humancron.zip 
