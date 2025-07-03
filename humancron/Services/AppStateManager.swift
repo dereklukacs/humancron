@@ -13,7 +13,6 @@ class AppStateManager: ObservableObject {
     @Published var completedSteps: Set<Int> = []
     @Published var isPinned = false
     @Published var shouldExecuteCommand: Bool = false
-    @Published var isFinishButtonFocused = false
     
     // Store paused workflow state
     private var pausedWorkflow: Workflow?
@@ -288,21 +287,37 @@ class AppStateManager: ObservableObject {
     }
     
     func toggleCurrentStepCompletion() {
+        guard let workflow = currentWorkflow,
+              currentStep < workflow.steps.count else { return }
+        
+        let step = workflow.steps[currentStep]
+        
+        // Handle finish step
+        if step.isFinishStep {
+            // Only allow completing finish step if all other steps are completed
+            let nonFinishSteps = workflow.steps.filter { !$0.isFinishStep }
+            let nonFinishStepIndices = workflow.steps.enumerated()
+                .compactMap { $0.element.isFinishStep ? nil : $0.offset }
+            let completedNonFinishSteps = nonFinishStepIndices.filter { completedSteps.contains($0) }
+            
+            if completedNonFinishSteps.count == nonFinishSteps.count {
+                // All non-finish steps are completed, complete the workflow
+                completeWorkflow()
+                return
+            } else {
+                // Don't allow toggling the finish step if not all tasks are completed
+                return
+            }
+        }
+        
+        // Regular step toggle
         if completedSteps.contains(currentStep) {
             completedSteps.remove(currentStep)
-            isFinishButtonFocused = false
         } else {
             completedSteps.insert(currentStep)
             
-            // Check if this was the last task
-            if let workflow = currentWorkflow,
-               completedSteps.count == workflow.steps.count {
-                // All tasks completed - focus on finish button
-                isFinishButtonFocused = true
-            } else {
-                // After marking as complete, move to next uncompleted task
-                moveToNextUncompletedStep()
-            }
+            // After marking as complete, move to next uncompleted task
+            moveToNextUncompletedStep()
         }
         notifyWorkflowChange()
     }
@@ -365,7 +380,6 @@ class AppStateManager: ObservableObject {
         currentStep = 0
         completedSteps.removeAll()
         openedLinksForSteps.removeAll()
-        isFinishButtonFocused = false
         hideApp()
         notifyWorkflowChange()
     }
@@ -409,7 +423,6 @@ class AppStateManager: ObservableObject {
         currentStep = 0
         openedLinksForSteps.removeAll()
         completedSteps.removeAll()
-        isFinishButtonFocused = false
         notifyWorkflowChange()
     }
     
