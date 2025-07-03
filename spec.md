@@ -70,6 +70,46 @@ Primary: SwiftUI
 
 
 
+## Window:
+- should be draggable and resizable
+- position and size should persist between opens
+- position and size don't need to persist through app restart
+
+## Workflow selection screen:
+- lists out workflows from the workflows folder
+- can focus on workflow with up/down arrows
+- can click to select, or enter key, or right arrow
+- the search bar is always ready for typing, the first workflow in the list is focused
+- the user can type to update the search. as the search filters down the list, the focused item remains the first workflow, but that may change as the workflows get filtered out. The enter key will select the focused workflow. 
+
+## Workflow folder:
+- allow the user to select a custom workflow folder in the settings.
+- persist this workflow folder between quiting and reopening the app
+- have a filewatcher to detect new workflows files
 
 
 
+
+## Automations
+
+Automations are stored as local scripts in the workflow folder.
+
+Secrets for automations are stored through iCloud keychain. 
+
+Workflow steps monitor the scripts and show loading while executing.
+- The user can choose to execute multiple in parallel.
+
+Nice to have: A stdout preview for diagnosing errors or showing output to the user. 
+
+Automation execution state should persist throughout opening/closing the view
+
+
+## Advanced roadmap:
+
+- Command execution -> workflow
+- Sub workflows
+- text inputs to workflows
+
+- workflow frequency setting (i.e. daily, weekly on sunday)
+- Temporary workflows:
+    - Press N key from 
