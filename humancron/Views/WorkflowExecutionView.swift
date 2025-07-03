@@ -23,13 +23,14 @@ struct WorkflowExecutionView: View {
             VStack(spacing: Token.Spacing.x2) {
                 HStack {
                     Text(appState.currentWorkflow?.name ?? "")
-                        .font(.system(size: 18, weight: .semibold))
+                        .textStyle(.title)
+                        .fontWeight(.semibold)
                         .foregroundColor(Token.Color.onBackground)
                     
                     Spacer()
                     
                     Text("\(appState.completedSteps.count) of \(appState.currentWorkflow?.steps.count ?? 0) completed")
-                        .font(.system(size: 14))
+                        .textStyle(.bodySmall)
                         .foregroundColor(Token.Color.onBackground.opacity(0.7))
                 }
                 
@@ -261,7 +262,8 @@ struct ChecklistStepRow: View {
             // Step content
             HStack(spacing: Token.Spacing.x2) {
                 Text(step.name)
-                    .font(.system(size: 16, weight: isCurrent ? .semibold : .medium))
+                    .textStyle(.body)
+                    .fontWeight(isCurrent ? .semibold : .medium)
                     .foregroundColor(isCompleted ? Token.Color.onBackground.opacity(0.5) : Token.Color.onBackground)
                     .strikethrough(isCompleted, color: Token.Color.onBackground.opacity(0.5))
                 
@@ -315,7 +317,7 @@ struct ChecklistStepRow: View {
                         Image(systemName: "timer")
                             .font(.system(size: 12))
                         Text("~\(Int(duration / 60)) min")
-                            .font(.system(size: 12))
+                            .textStyle(.caption)
                     }
                     .foregroundColor(Token.Color.onBackground.opacity(0.5))
                 }

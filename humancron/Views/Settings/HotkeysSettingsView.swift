@@ -15,11 +15,12 @@ struct HotkeysSettingsView: View {
                 // Global Hotkey Section
                 VStack(alignment: .leading, spacing: Token.Spacing.x3) {
                     Text("Global Hotkey")
-                        .font(.system(size: 14, weight: .semibold))
+                        .textStyle(.bodySmall)
+                        .fontWeight(.semibold)
                         .foregroundColor(Token.Color.onSurface)
                     
                     Text("The keyboard shortcut to activate Humancron from anywhere")
-                        .font(.system(size: 12))
+                        .textStyle(.caption)
                         .foregroundColor(Token.Color.onSurface.opacity(0.7))
                     
                     HStack {
@@ -30,30 +31,30 @@ struct HotkeysSettingsView: View {
                             onStopRecording: stopRecordingHotkey
                         )
                         
-                        Button("Reset") {
+                        DSButton("Reset", style: .secondary) {
                             settings.updateHotkey(modifiers: .option, keyCode: 49) // Reset to Option+Space
                             // Notify hotkey service to update
                             NotificationCenter.default.post(name: .hotkeyChanged, object: nil)
                         }
-                        .buttonStyle(SecondaryButtonStyle())
                     }
                 }
                 
-                Divider()
+                DSDivider()
                     .padding(.vertical, Token.Spacing.x2)
                 
                 // Workflow Shortcuts Section
                 VStack(alignment: .leading, spacing: Token.Spacing.x3) {
                     Text("Workflow Shortcuts")
-                        .font(.system(size: 14, weight: .semibold))
+                        .textStyle(.bodySmall)
+                        .fontWeight(.semibold)
                         .foregroundColor(Token.Color.onSurface)
                     
                     Text("Quick keyboard shortcuts for frequently used workflows")
-                        .font(.system(size: 12))
+                        .textStyle(.caption)
                         .foregroundColor(Token.Color.onSurface.opacity(0.7))
                     
                     Text("Coming soon...")
-                        .font(.system(size: 12))
+                        .textStyle(.caption)
                         .foregroundColor(Token.Color.onSurface.opacity(0.5))
                         .italic()
                 }

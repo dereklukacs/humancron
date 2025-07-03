@@ -81,6 +81,19 @@ class SystemTrayService: ObservableObject {
         
         menu.addItem(NSMenuItem.separator())
         
+        #if DEBUG
+        // Debug menu item to reset onboarding
+        let resetOnboardingItem = NSMenuItem(
+            title: "Reset Onboarding (Debug)",
+            action: #selector(resetOnboarding),
+            keyEquivalent: ""
+        )
+        resetOnboardingItem.target = self
+        menu.addItem(resetOnboardingItem)
+        
+        menu.addItem(NSMenuItem.separator())
+        #endif
+        
         // Quit
         let quitItem = NSMenuItem(
             title: "Quit HumanCron",
@@ -141,6 +154,28 @@ class SystemTrayService: ObservableObject {
     @objc private func quitApp() {
         NSApplication.shared.terminate(nil)
     }
+    
+    #if DEBUG
+    @objc private func resetOnboarding() {
+        SettingsService.shared.hasCompletedOnboarding = false
+        SettingsService.shared.hasCreatedSampleWorkflows = false
+        
+        // Show a confirmation
+        let alert = NSAlert()
+        alert.messageText = "Onboarding Reset"
+        alert.informativeText = "The onboarding flow has been reset. The app will restart to show the onboarding."
+        alert.alertStyle = .informational
+        alert.addButton(withTitle: "OK")
+        alert.runModal()
+        
+        // Restart the app
+        if let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: Bundle.main.bundleIdentifier!) {
+            NSWorkspace.shared.openApplication(at: url, configuration: NSWorkspace.OpenConfiguration()) { _, _ in
+                NSApplication.shared.terminate(nil)
+            }
+        }
+    }
+    #endif
     
     @objc private func statusItemClicked(_ sender: Any?) {
         print("SystemTrayService: Status item clicked")

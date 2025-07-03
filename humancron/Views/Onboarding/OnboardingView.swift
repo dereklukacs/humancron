@@ -7,59 +7,75 @@ struct OnboardingView: View {
     @Environment(\.dismiss) private var dismiss
     
     var body: some View {
-        VStack(spacing: 0) {
-            // Progress indicator
-            ProgressBar(currentStep: currentStep, totalSteps: 4)
-                .padding(.horizontal, Token.Spacing.x4)
-                .padding(.top, Token.Spacing.x4)
+        ZStack {
+            // Background with blur effect to match main app
+            VisualEffectBackground()
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             
-            // Content
-            TabView(selection: $currentStep) {
-                WelcomeStep()
-                    .tag(0)
+            VStack(spacing: 0) {
+                // Drag handle area at the top to match main app
+                Rectangle()
+                    .fill(Color.clear)
+                    .frame(height: 30)
+                    .overlay(
+                        // Visual drag indicator in center
+                        Capsule()
+                            .fill(Token.Color.onSurface.opacity(0.1))
+                            .frame(width: 50, height: 4)
+                    )
+                    .background(WindowDragView())
                 
-                PermissionsStep()
-                    .tag(1)
+                // Progress indicator
+                ProgressBar(currentStep: currentStep, totalSteps: 4)
+                    .padding(.horizontal, Token.Spacing.x4)
+                    .padding(.top, Token.Spacing.x2)
                 
-                WorkflowSetupStep()
-                    .tag(2)
+                // Content
+                TabView(selection: $currentStep) {
+                    WelcomeStep()
+                        .tag(0)
+                    
+                    PermissionsStep()
+                        .tag(1)
+                    
+                    WorkflowSetupStep()
+                        .tag(2)
+                    
+                    CompletionStep()
+                        .tag(3)
+                }
+                .tabViewStyle(.automatic)
                 
-                CompletionStep()
-                    .tag(3)
-            }
-            .tabViewStyle(.automatic)
-            
-            // Navigation buttons
-            HStack {
-                if currentStep > 0 {
-                    Button("Back") {
-                        withAnimation {
-                            currentStep -= 1
+                // Navigation buttons
+                HStack {
+                    if currentStep > 0 {
+                        DSButton("Back", style: .secondary) {
+                            withAnimation {
+                                currentStep -= 1
+                            }
                         }
                     }
-                    .buttonStyle(SecondaryButtonStyle())
-                }
-                
-                Spacer()
-                
-                if currentStep < 3 {
-                    Button("Next") {
-                        withAnimation {
-                            currentStep += 1
+                    
+                    Spacer()
+                    
+                    if currentStep < 3 {
+                        DSButton("Next", style: .primary) {
+                            withAnimation {
+                                currentStep += 1
+                            }
+                        }
+                    } else {
+                        DSButton("Get Started", style: .primary) {
+                            completeOnboarding()
                         }
                     }
-                    .buttonStyle(PrimaryButtonStyle())
-                } else {
-                    Button("Get Started") {
-                        completeOnboarding()
-                    }
-                    .buttonStyle(PrimaryButtonStyle())
                 }
+                .padding(Token.Spacing.x4)
             }
-            .padding(Token.Spacing.x4)
         }
         .frame(width: 600, height: 500)
-        .background(Token.Color.background)
+        .clipShape(RoundedRectangle(cornerRadius: Token.Radius.lg))
+        .shadow(radius: 20)
     }
     
     private func completeOnboarding() {
@@ -96,11 +112,10 @@ struct WelcomeStep: View {
                 .foregroundColor(Token.Color.brand)
             
             Text("Welcome to HumanCron")
-                .font(.largeTitle)
-                .fontWeight(.bold)
+                .textStyle(.displayLarge)
             
             Text("Your personal workflow assistant")
-                .font(.title3)
+                .textStyle(.title)
                 .foregroundColor(Token.Color.onSurface.opacity(0.7))
             
             VStack(alignment: .leading, spacing: Token.Spacing.x3) {
@@ -138,15 +153,15 @@ struct FeatureRow: View {
     var body: some View {
         HStack(alignment: .top, spacing: Token.Spacing.x3) {
             Image(systemName: icon)
-                .font(.title2)
+                .font(.system(size: 24))
                 .foregroundColor(Token.Color.brand)
                 .frame(width: 30)
             
             VStack(alignment: .leading, spacing: Token.Spacing.x1) {
                 Text(title)
-                    .font(.headline)
+                    .textStyle(.headline)
                 Text(description)
-                    .font(.subheadline)
+                    .textStyle(.bodySmall)
                     .foregroundColor(Token.Color.onSurface.opacity(0.7))
             }
             
@@ -167,20 +182,18 @@ struct PermissionsStep: View {
                 .foregroundColor(Token.Color.brand)
             
             Text("Accessibility Permission")
-                .font(.largeTitle)
-                .fontWeight(.bold)
+                .textStyle(.displayLarge)
             
             Text("HumanCron needs accessibility permissions to respond to your global hotkey")
-                .font(.body)
+                .textStyle(.body)
                 .foregroundColor(Token.Color.onSurface.opacity(0.7))
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, Token.Spacing.x6)
             
             VStack(spacing: Token.Spacing.x3) {
-                Button("Grant Permission") {
+                DSButton("Grant Permission", style: .primary) {
                     checkAndRequestPermission()
                 }
-                .buttonStyle(PrimaryButtonStyle())
                 
                 if hasAccessibilityPermission {
                     Label("Permission granted", systemImage: "checkmark.circle.fill")
@@ -189,7 +202,7 @@ struct PermissionsStep: View {
             }
             
             Text("You can change this later in System Settings > Privacy & Security > Accessibility")
-                .font(.caption)
+                .textStyle(.caption)
                 .foregroundColor(Token.Color.onSurface.opacity(0.5))
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, Token.Spacing.x6)
@@ -228,21 +241,21 @@ struct WorkflowSetupStep: View {
                 .foregroundColor(Token.Color.brand)
             
             Text("Set Up Workflows")
-                .font(.largeTitle)
-                .fontWeight(.bold)
+                .textStyle(.displayLarge)
             
             Text("Workflows are YAML files that define your step-by-step routines")
-                .font(.body)
+                .textStyle(.body)
                 .foregroundColor(Token.Color.onSurface.opacity(0.7))
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, Token.Spacing.x6)
             
             VStack(alignment: .leading, spacing: Token.Spacing.x3) {
                 Label("Workflow Directory", systemImage: "folder")
-                    .font(.headline)
+                    .textStyle(.headline)
                 
                 Text(settings.effectiveWorkflowsDirectory)
-                    .font(.system(.body, design: .monospaced))
+                    .textStyle(.body)
+                    .fontDesign(.monospaced)
                     .foregroundColor(Token.Color.onSurface.opacity(0.7))
                     .padding(Token.Spacing.x2)
                     .background(
@@ -250,8 +263,7 @@ struct WorkflowSetupStep: View {
                             .fill(Token.Color.surface)
                     )
                 
-                Toggle("Create example workflows to get started", isOn: $willCreateSamples)
-                    .toggleStyle(SwitchToggleStyle())
+                DSToggle("Create example workflows to get started", isOn: $willCreateSamples)
             }
             .padding(.horizontal, Token.Spacing.x6)
             
@@ -342,30 +354,29 @@ struct CompletionStep: View {
                 .foregroundColor(.green)
             
             Text("You're All Set!")
-                .font(.largeTitle)
-                .fontWeight(.bold)
+                .textStyle(.displayLarge)
             
             Text("HumanCron is ready to help you stay productive")
-                .font(.title3)
+                .textStyle(.title)
                 .foregroundColor(Token.Color.onSurface.opacity(0.7))
             
             VStack(alignment: .leading, spacing: Token.Spacing.x3) {
                 HotkeyReminder(hotkey: settings.globalHotkey)
                 
-                Divider()
+                DSDivider()
                 
                 VStack(alignment: .leading, spacing: Token.Spacing.x2) {
                     Text("Quick Tips:")
-                        .font(.headline)
+                        .textStyle(.headline)
                     
                     Label("Press Enter to advance to the next step", systemImage: "return")
-                        .font(.subheadline)
+                        .textStyle(.bodySmall)
                     
                     Label("Press Cmd+Enter to advance and open links", systemImage: "command")
-                        .font(.subheadline)
+                        .textStyle(.bodySmall)
                     
                     Label("Press Escape to close the app", systemImage: "escape")
-                        .font(.subheadline)
+                        .textStyle(.bodySmall)
                 }
             }
             .padding(Token.Spacing.x4)
@@ -387,15 +398,15 @@ struct HotkeyReminder: View {
     var body: some View {
         HStack {
             Image(systemName: "keyboard")
-                .font(.title2)
+                .font(.system(size: 24))
                 .foregroundColor(Token.Color.brand)
             
             VStack(alignment: .leading) {
                 Text("Launch HumanCron anytime with:")
-                    .font(.subheadline)
+                    .textStyle(.bodySmall)
                 Text(hotkey.uppercased())
-                    .font(.system(.title3, design: .monospaced))
-                    .fontWeight(.semibold)
+                    .textStyle(.title)
+                    .fontDesign(.monospaced)
             }
             
             Spacer()
@@ -403,19 +414,3 @@ struct HotkeyReminder: View {
     }
 }
 
-// Button styles for onboarding
-struct PrimaryButtonStyle: ButtonStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .font(.system(size: 14, weight: .medium))
-            .foregroundColor(.white)
-            .padding(.horizontal, Token.Spacing.x4)
-            .padding(.vertical, Token.Spacing.x2)
-            .background(
-                RoundedRectangle(cornerRadius: Token.Radius.sm)
-                    .fill(Token.Color.brand)
-            )
-            .opacity(configuration.isPressed ? 0.8 : 1.0)
-            .scaleEffect(configuration.isPressed ? 0.98 : 1.0)
-    }
-}

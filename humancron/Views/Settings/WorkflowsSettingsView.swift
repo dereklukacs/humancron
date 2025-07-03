@@ -12,16 +12,17 @@ struct WorkflowsSettingsView: View {
                 // Workflows Directory Section
                 VStack(alignment: .leading, spacing: Token.Spacing.x3) {
                     Text("Workflows Directory")
-                        .font(.system(size: 14, weight: .semibold))
+                        .textStyle(.bodySmall)
+                        .fontWeight(.semibold)
                         .foregroundColor(Token.Color.onSurface)
                     
                     Text("Location where your workflow YAML files are stored")
-                        .font(.system(size: 12))
+                        .textStyle(.caption)
                         .foregroundColor(Token.Color.onSurface.opacity(0.7))
                     
                     HStack {
                         Text(settings.effectiveWorkflowsDirectory)
-                            .font(.system(size: 12))
+                            .textStyle(.caption)
                             .foregroundColor(Token.Color.onSurface)
                             .lineLimit(1)
                             .truncationMode(.middle)
@@ -33,41 +34,38 @@ struct WorkflowsSettingsView: View {
                                     .fill(Token.Color.surface)
                             )
                         
-                        Button("Choose...") {
+                        DSButton("Choose...", style: .secondary) {
                             showDirectoryPicker()
                         }
-                        .buttonStyle(SecondaryButtonStyle())
                         
-                        Button("Open") {
+                        DSButton("Open", style: .secondary) {
                             openWorkflowsDirectory()
                         }
-                        .buttonStyle(SecondaryButtonStyle())
                     }
                     
                     if settings.workflowsDirectory.isEmpty {
                         Label("Using default directory", systemImage: "info.circle")
-                            .font(.system(size: 11))
+                            .textStyle(.caption)
                             .foregroundColor(Token.Color.onSurface.opacity(0.5))
                     }
                 }
                 
-                Divider()
+                DSDivider()
                     .padding(.vertical, Token.Spacing.x2)
                 
                 // Workflow Management Section
                 VStack(alignment: .leading, spacing: Token.Spacing.x3) {
                     Text("Workflow Management")
-                        .font(.system(size: 14, weight: .semibold))
+                        .textStyle(.bodySmall)
+                        .fontWeight(.semibold)
                         .foregroundColor(Token.Color.onSurface)
                     
-                    Button(action: createExampleWorkflows) {
-                        Label("Create Example Workflows", systemImage: "doc.badge.plus")
-                            .font(.system(size: 13))
+                    DSButton("Create Example Workflows", style: .secondary) {
+                        createExampleWorkflows()
                     }
-                    .buttonStyle(SecondaryButtonStyle())
                     
                     Text("Creates sample workflow files to help you get started")
-                        .font(.system(size: 12))
+                        .textStyle(.caption)
                         .foregroundColor(Token.Color.onSurface.opacity(0.7))
                 }
                 

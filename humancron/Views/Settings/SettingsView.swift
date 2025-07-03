@@ -38,7 +38,7 @@ struct SettingsView: View {
             .padding(Token.Spacing.x3)
             .background(Token.Color.surface)
             
-            Divider()
+            DSDivider()
             
             // Tab Content
             Group {
@@ -73,7 +73,8 @@ struct SettingsTab: View {
                 Image(systemName: icon)
                     .font(.system(size: 14))
                 Text(title)
-                    .font(.system(size: 13, weight: .medium))
+                    .textStyle(.bodySmall)
+                    .fontWeight(.medium)
             }
             .foregroundColor(isSelected ? Token.Color.onSurface : Token.Color.onSurface.opacity(0.7))
             .padding(.horizontal, Token.Spacing.x3)

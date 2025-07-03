@@ -25,13 +25,8 @@ struct WorkflowSelectorView: View {
     var body: some View {
         VStack(spacing: Token.Spacing.x3) {
             // Search bar
-            HStack {
-                Image(systemName: "magnifyingglass")
-                    .foregroundColor(Token.Color.onSurface.opacity(0.5))
-                
-                TextField("Search workflows...", text: $searchText)
-                    .textFieldStyle(.plain)
-                    .font(.system(size: 16))
+            ZStack {
+                DSTextField("Search workflows...", text: $searchText)
                     .focused($isSearchFieldFocused)
                     .onChange(of: searchText) { oldValue, newValue in
                         // Reset selection to first item when search changes
@@ -41,17 +36,24 @@ struct WorkflowSelectorView: View {
                         selectWorkflow()
                     }
                 
-                if !searchText.isEmpty {
-                    Button(action: { searchText = "" }) {
-                        Image(systemName: "xmark.circle.fill")
-                            .foregroundColor(Token.Color.onSurface.opacity(0.5))
+                HStack {
+                    Image(systemName: "magnifyingglass")
+                        .foregroundColor(Token.Color.onSurface.opacity(0.5))
+                        .padding(.leading, Token.Spacing.x3)
+                        .allowsHitTesting(false)
+                    
+                    Spacer()
+                    
+                    if !searchText.isEmpty {
+                        Button(action: { searchText = "" }) {
+                            Image(systemName: "xmark.circle.fill")
+                                .foregroundColor(Token.Color.onSurface.opacity(0.5))
+                        }
+                        .buttonStyle(.plain)
+                        .padding(.trailing, Token.Spacing.x3)
                     }
-                    .buttonStyle(.plain)
                 }
             }
-            .padding(Token.Spacing.x3)
-            .background(Token.Color.surface.opacity(0.8))
-            .cornerRadius(Token.Radius.md)
             
             // Workflow list
             if workflowService.isLoading {
@@ -68,22 +70,21 @@ struct WorkflowSelectorView: View {
                     
                     if searchText.isEmpty {
                         Text("No workflows found")
-                            .font(.system(size: 16, weight: .medium))
+                            .textStyle(.body)
+                            .fontWeight(.medium)
                             .foregroundColor(Token.Color.onSurface.opacity(0.7))
                         
                         Text("Create a workflow in ~/.humancron/workflows/")
-                            .font(.system(size: 14))
+                            .textStyle(.bodySmall)
                             .foregroundColor(Token.Color.onSurface.opacity(0.5))
                         
-                        Button("Open Workflows Folder") {
+                        DSButton("Open Workflows Folder", style: .tertiary) {
                             workflowService.openWorkflowsFolder()
                             appState.hideApp()
                         }
-                        .buttonStyle(.plain)
-                        .foregroundColor(Token.Color.brand)
                     } else {
                         Text("No workflows match '\(searchText)'")
-                            .font(.system(size: 16))
+                            .textStyle(.body)
                             .foregroundColor(Token.Color.onSurface.opacity(0.7))
                     }
                 }
@@ -171,7 +172,8 @@ struct WorkflowRow: View {
             VStack(alignment: .leading, spacing: Token.Spacing.x1) {
                 HStack(spacing: Token.Spacing.x2) {
                     Text(workflow.name)
-                        .font(.system(size: 15, weight: .medium))
+                        .textStyle(.body)
+                        .fontWeight(.medium)
                         .foregroundColor(Token.Color.onSurface)
                     
                     if isPaused {
@@ -179,14 +181,14 @@ struct WorkflowRow: View {
                             Image(systemName: "pause.circle.fill")
                                 .font(.system(size: 12))
                             Text("In Progress")
-                                .font(.system(size: 11))
+                                .textStyle(.caption)
                         }
                         .foregroundColor(Token.Color.brand)
                     }
                 }
                 
                 Text(workflow.description)
-                    .font(.system(size: 13))
+                    .textStyle(.bodySmall)
                     .foregroundColor(Token.Color.onSurface.opacity(0.7))
             }
             
@@ -194,12 +196,12 @@ struct WorkflowRow: View {
             
             VStack(alignment: .trailing, spacing: 2) {
                 Text("\(workflow.steps.count) steps")
-                    .font(.system(size: 12))
+                    .textStyle(.caption)
                     .foregroundColor(Token.Color.onSurface.opacity(0.5))
                 
                 if let lastRun = lastRun {
                     Text(WorkflowHistoryService.shared.formatLastRunTime(lastRun.startedAt))
-                        .font(.system(size: 11))
+                        .textStyle(.caption)
                         .foregroundColor(Token.Color.onSurface.opacity(0.4))
                 }
             }

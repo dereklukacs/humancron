@@ -10,49 +10,50 @@ struct GeneralSettingsView: View {
                 // Startup Section
                 VStack(alignment: .leading, spacing: Token.Spacing.x3) {
                     Text("Startup")
-                        .font(.system(size: 14, weight: .semibold))
+                        .textStyle(.bodySmall)
+                        .fontWeight(.semibold)
                         .foregroundColor(Token.Color.onSurface)
                     
-                    Toggle("Launch at login", isOn: $settings.launchAtLogin)
-                        .toggleStyle(SwitchToggleStyle())
+                    DSToggle("Launch at login", isOn: $settings.launchAtLogin)
                         .onChange(of: settings.launchAtLogin) { newValue in
                             // TODO: Implement launch at login functionality
                             print("Launch at login: \(newValue)")
                         }
                 }
                 
-                Divider()
+                DSDivider()
                     .padding(.vertical, Token.Spacing.x2)
                 
                 // Appearance Section
                 VStack(alignment: .leading, spacing: Token.Spacing.x3) {
                     Text("Appearance")
-                        .font(.system(size: 14, weight: .semibold))
+                        .textStyle(.bodySmall)
+                        .fontWeight(.semibold)
                         .foregroundColor(Token.Color.onSurface)
                     
-                    Toggle("Show in Dock", isOn: $settings.showInDock)
-                        .toggleStyle(SwitchToggleStyle())
+                    DSToggle("Show in Dock", isOn: $settings.showInDock)
                         .onChange(of: settings.showInDock) { newValue in
                             updateDockVisibility(newValue)
                         }
                     
                     Text("When disabled, Humancron will only appear in the menu bar")
-                        .font(.system(size: 12))
+                        .textStyle(.caption)
                         .foregroundColor(Token.Color.onSurface.opacity(0.7))
                 }
                 
-                Divider()
+                DSDivider()
                     .padding(.vertical, Token.Spacing.x2)
                 
                 // Window Size Section
                 VStack(alignment: .leading, spacing: Token.Spacing.x3) {
                     Text("Window Size")
-                        .font(.system(size: 14, weight: .semibold))
+                        .textStyle(.bodySmall)
+                        .fontWeight(.semibold)
                         .foregroundColor(Token.Color.onSurface)
                     
                     HStack {
                         Text("Width")
-                            .font(.system(size: 13))
+                            .textStyle(.bodySmall)
                             .foregroundColor(Token.Color.onSurface)
                             .frame(width: 60, alignment: .leading)
                         
@@ -60,14 +61,15 @@ struct GeneralSettingsView: View {
                             .controlSize(.small)
                         
                         Text("\(Int(settings.windowWidth))")
-                            .font(.system(size: 12, design: .monospaced))
+                            .textStyle(.caption)
+                            .fontDesign(.monospaced)
                             .foregroundColor(Token.Color.onSurface.opacity(0.7))
                             .frame(width: 50, alignment: .trailing)
                     }
                     
                     HStack {
                         Text("Height")
-                            .font(.system(size: 13))
+                            .textStyle(.bodySmall)
                             .foregroundColor(Token.Color.onSurface)
                             .frame(width: 60, alignment: .leading)
                         
@@ -75,52 +77,53 @@ struct GeneralSettingsView: View {
                             .controlSize(.small)
                         
                         Text("\(Int(settings.windowHeight))")
-                            .font(.system(size: 12, design: .monospaced))
+                            .textStyle(.caption)
+                            .fontDesign(.monospaced)
                             .foregroundColor(Token.Color.onSurface.opacity(0.7))
                             .frame(width: 50, alignment: .trailing)
                     }
                     
                     HStack {
-                        Button("Reset to Default") {
+                        DSButton("Reset to Default", style: .secondary) {
                             settings.windowWidth = 600
                             settings.windowHeight = 400
                         }
-                        .buttonStyle(SecondaryButtonStyle())
                         
                         Spacer()
                         
                         Text("Changes apply next time window opens")
-                            .font(.system(size: 11))
+                            .textStyle(.caption)
                             .foregroundColor(Token.Color.onSurface.opacity(0.5))
                     }
                 }
                 
-                Divider()
+                DSDivider()
                     .padding(.vertical, Token.Spacing.x2)
                 
                 // About Section
                 VStack(alignment: .leading, spacing: Token.Spacing.x3) {
                     Text("About")
-                        .font(.system(size: 14, weight: .semibold))
+                        .textStyle(.bodySmall)
+                        .fontWeight(.semibold)
                         .foregroundColor(Token.Color.onSurface)
                     
                     HStack {
                         Text("Version")
-                            .font(.system(size: 13))
+                            .textStyle(.bodySmall)
                             .foregroundColor(Token.Color.onSurface.opacity(0.7))
                         Spacer()
                         Text("1.0.0")
-                            .font(.system(size: 13))
+                            .textStyle(.bodySmall)
                             .foregroundColor(Token.Color.onSurface)
                     }
                     
                     HStack {
                         Text("Build")
-                            .font(.system(size: 13))
+                            .textStyle(.bodySmall)
                             .foregroundColor(Token.Color.onSurface.opacity(0.7))
                         Spacer()
                         Text("100")
-                            .font(.system(size: 13))
+                            .textStyle(.bodySmall)
                             .foregroundColor(Token.Color.onSurface)
                     }
                 }

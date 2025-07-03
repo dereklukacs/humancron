@@ -16,7 +16,7 @@ struct HotkeyBar: View {
                 .disabled(item.action == nil)
                 
                 if item.id != items.last?.id {
-                    Divider()
+                    DSDivider(.vertical)
                         .frame(height: 12)
                         .opacity(0.3)
                 }
@@ -37,7 +37,7 @@ struct HotkeyItemView: View {
             ShortcutHint(item.key)
                 .opacity(item.action == nil ? 0.4 : 1.0)
             Text(item.label)
-                .font(.system(size: 12))
+                .textStyle(.caption)
                 .foregroundColor(Token.Color.onBackground.opacity(item.action == nil ? 0.4 : 0.8))
         }
     }
@@ -63,7 +63,7 @@ struct HotkeyButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .padding(.horizontal, Token.Spacing.x1)
-            .padding(.vertical, 4)
+            .padding(.vertical, Token.Spacing.x1)
             .background(
                 RoundedRectangle(cornerRadius: Token.Radius.sm)
                     .fill(
@@ -75,8 +75,8 @@ struct HotkeyButtonStyle: ButtonStyle {
             )
             .opacity(configuration.isPressed && !isDisabled ? 0.8 : 1.0)
             .scaleEffect(configuration.isPressed && !isDisabled ? 0.95 : 1.0)
-            .animation(.easeInOut(duration: 0.1), value: configuration.isPressed)
-            .animation(.easeInOut(duration: 0.1), value: isHovered)
+            .animation(.easeInOut(duration: Token.Motion.fast), value: configuration.isPressed)
+            .animation(.easeInOut(duration: Token.Motion.fast), value: isHovered)
             .onHover { hovering in
                 if !isDisabled {
                     isHovered = hovering
