@@ -292,6 +292,7 @@ struct ChecklistStepRow: View {
                     } else {
                         Circle()
                             .stroke(Token.Color.onBackground.opacity(0.3), lineWidth: 2)
+                            .frame(width: 20, height: 20) // Match the icon size
                     }
                 }
                 .frame(width: 24, height: 24) // Fixed frame for consistent sizing
