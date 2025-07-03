@@ -87,20 +87,24 @@ Primary: SwiftUI
 - persist this workflow folder between quiting and reopening the app
 - have a filewatcher to detect new workflows files
 
-
+## Workflow execution:
+- Check off an item with enter key or clicking checkbox
+- Focus on item with arrow keys or clicking on the body of the item
+- Open link (when available) with spacebar or clicking link icon
+    - Show favicon when available from urls
+    - Show app icon when available from mac deep links
+- After checking off an item, go to the next time in the list. Use "circular array" logic to loop around to skip tasks when at the end of the list.
+- After completing all items, show a "Finish" option at the end of the list
+- After the user activates "Finish", close the workflow and hide the window.
 
 
 ## Automations
 
 Automations are stored as local scripts in the workflow folder.
-
 Secrets for automations are stored through iCloud keychain. 
-
 Workflow steps monitor the scripts and show loading while executing.
 - The user can choose to execute multiple in parallel.
-
 Nice to have: A stdout preview for diagnosing errors or showing output to the user. 
-
 Automation execution state should persist throughout opening/closing the view
 
 
@@ -113,3 +117,5 @@ Automation execution state should persist throughout opening/closing the view
 - workflow frequency setting (i.e. daily, weekly on sunday)
 - Temporary workflows:
     - Press N key from 
+- strict option (no skipping tasks, must open links, must run scripts)
+
