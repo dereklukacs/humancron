@@ -5,15 +5,15 @@ all: clean build test
 
 # Build the main project
 build:
-	xcodebuild -project humancron.xcodeproj -scheme humancron build
+	xcodebuild -project humancron.xcodeproj -scheme humancron build -quiet
 
 # Run tests
 test:
-	xcodebuild -project humancron.xcodeproj -scheme humancron test
+	xcodebuild -project humancron.xcodeproj -scheme humancron test -quiet
 
 # Clean build folder
 clean:
-	xcodebuild -project humancron.xcodeproj -scheme humancron clean
+	xcodebuild -project humancron.xcodeproj -scheme humancron clean -quiet
 
 # Build DesignSystem package
 build-design-system:
