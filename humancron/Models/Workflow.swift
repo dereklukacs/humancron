@@ -8,6 +8,7 @@ struct Workflow: Identifiable, Codable {
     let description: String
     let hotkey: String?
     let steps: [WorkflowStep]
+    var filePath: String?
     
     // Computed properties
     var totalDuration: TimeInterval? {
@@ -21,6 +22,7 @@ struct Workflow: Identifiable, Codable {
         case description
         case hotkey
         case steps
+        case filePath
     }
 }
 

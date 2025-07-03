@@ -168,7 +168,8 @@ class YAMLParser {
     // Load and parse a workflow from a file
     func loadWorkflow(from fileURL: URL) throws -> Workflow {
         let yamlString = try String(contentsOf: fileURL, encoding: .utf8)
-        let workflow = try parseWorkflow(from: yamlString)
+        var workflow = try parseWorkflow(from: yamlString)
+        workflow.filePath = fileURL.path
         try validateWorkflow(workflow)
         return workflow
     }

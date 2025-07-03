@@ -172,6 +172,9 @@ struct WorkflowExecutionView: View {
                     appState.shouldExecuteCommand = true
                 }
                 return nil
+            case 14: // E key - edit workflow in TextEdit
+                openWorkflowInTextEdit()
+                return nil
             default:
                 return nil // Consume all other events
             }
@@ -189,6 +192,21 @@ struct WorkflowExecutionView: View {
             NSEvent.removeMonitor(monitor)
             eventMonitor = nil
         }
+    }
+    
+    private func openWorkflowInTextEdit() {
+        guard let workflow = appState.currentWorkflow,
+              let filePath = workflow.filePath else { return }
+        
+        let fileURL = URL(fileURLWithPath: filePath)
+        
+        // Open in TextEdit
+        NSWorkspace.shared.open(
+            [fileURL],
+            withApplicationAt: URL(fileURLWithPath: "/System/Applications/TextEdit.app"),
+            configuration: NSWorkspace.OpenConfiguration(),
+            completionHandler: nil
+        )
     }
 }
 
